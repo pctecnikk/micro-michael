@@ -27,6 +27,27 @@ El juego ya funciona. Cada persona guarda su progreso en su propio dispositivo.
 
 En el móvil, abre el enlace y usa **Añadir a pantalla de inicio** (Safari en iPhone, Chrome en Android). Así queda con su propio icono, como una app.
 
+## 2. Activar los puntos online y la clasificación mundial (Supabase, gratis)
+
+Cada jugador puede crear un **código secreto** (por ejemplo `MJ-7K3Q-9XPA`). Con él sus puntos se guardan online, los recupera en cualquier móvil u ordenador y sale en la **clasificación mundial**. No hace falta cuenta de Google ni correo.
+
+1. Entra en <https://supabase.com>, pulsa **Start your project** y entra con tu cuenta de **GitHub**.
+2. Pulsa **New project**. Ponle de nombre `micro-michael`, inventa una contraseña para la base de datos (no la necesitarás en el juego), elige una región de Europa y pulsa **Create new project**. Tarda un par de minutos.
+3. En el menú de la izquierda, abre **SQL Editor**, pulsa **New query**, pega el contenido de `supabase.sql` de este repositorio y pulsa **Run**. Debe salir *Success*.
+4. Ve a **Project Settings → API Keys** (o **Data API**) y copia la **URL del proyecto** y la **clave pública** (*publishable key* o *anon key*). La clave secreta no se usa nunca.
+5. En GitHub, edita `supabase-config.js` y sustituye `null` por esos dos datos:
+
+```js
+window.SUPABASE_CONFIG = {
+  url: "https://abcdefghijklmno.supabase.co",
+  key: "sb_publishable_..."
+};
+```
+
+6. Guarda con **Commit changes**. En un par de minutos, al elegir jugador aparecerá **🌍 Puntos online**, y en **Puntos y medallas** la **clasificación mundial**.
+
+La URL y la clave pública no son secretas. La tabla está cerrada: solo se puede usar a través de las funciones de `supabase.sql`, que guardan el código cifrado y en la clasificación solo muestran el nombre de jugador y los puntos.
+
 ## Avisar de una versión nueva
 
 La web consulta `version.json` cada minuto. Cuando ese número cambia, a quien esté jugando le sale un aviso para actualizar, sin perder su progreso.
@@ -36,12 +57,21 @@ La web consulta `version.json` cada minuto. Cuando ese número cambia, a quien e
 
 ## Cómo se guarda el progreso
 
-El progreso de cada jugador se guarda en el navegador de cada dispositivo. Para pasarlo a otro móvil u ordenador, usa la **copia de seguridad** en **Puntos y medallas**: descarga un archivo `.json` y cárgalo en el otro dispositivo.
+| Situación | Dónde se guarda |
+|---|---|
+| Jugador sin código | En el navegador de ese dispositivo |
+| Jugador con código | En Supabase. Se recupera en cualquier dispositivo con **¿Ya tienes un código?** |
+| Copia de seguridad | Un archivo `.json` que se descarga desde **Puntos y medallas** |
+
+En la clasificación mundial solo se ven el nombre de jugador y los puntos. Si juegan niños, mejor que usen un apodo y no su nombre real.
 
 ## Archivos
 
 | Archivo | Para qué sirve |
 |---|---|
 | `index.html` | El juego completo |
+| `supa.js` | Puntos online con código de jugador y clasificación mundial |
+| `supabase-config.js` | URL y clave pública de Supabase (empieza en `null`) |
+| `supabase.sql` | Script para preparar la base de datos en Supabase |
 | `version.json` | Número de versión para avisar de actualizaciones |
 | `manifest.webmanifest`, `icon-*.png`, `icon.svg` | Icono y nombre al añadirlo a la pantalla de inicio |

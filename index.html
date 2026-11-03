@@ -238,6 +238,9 @@ button:focus-visible{outline:3px solid var(--spot);outline-offset:2px}
 .chips span{font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid var(--spot);color:var(--spot)}
 #cloudBox:empty,#worldRank:empty{display:none}
 .cloudbox{display:flex;flex-direction:column;gap:10px;background:var(--stage-2);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.codebox{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.codebox span{font-family:var(--display);font-size:20px;letter-spacing:.06em;color:var(--spot);user-select:all;-webkit-user-select:all}
+#cloudBox details summary{cursor:pointer;font-weight:700;color:var(--spot)}
 .wrow{display:grid;grid-template-columns:2.2em 1fr auto;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
 .wrow:last-child{border-bottom:0}
 .wrow.me{color:var(--spot);font-weight:900}
@@ -1263,7 +1266,7 @@ $("gCont").onclick=()=>{$("gSetup").hidden=true;$("gPlay").hidden=false;gMode();
   const p=G.players[G.turn];if(!G.busy&&p&&!p.bot&&["roll","decide","end"].includes(G.phase))gPanel();else if(!G.busy)gStartTurn();else gPanel()};
 
 /* ================= NEW VERSION NOTICE (website only) ================= */
-const APP_VERSION="20261103-165045";
+const APP_VERSION="20261103-165415";
 (function(){
   if(APP_VERSION.startsWith("__")||!/^https?:$/.test(location.protocol))return;
   let latest=null,snoozeUntil=0;
@@ -1284,7 +1287,7 @@ const Store={db:null,players:{},writing:{},dirty:{}};
 const RUN={};let ME=null,lastMe=null,pendingGame=null;
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function slug(n){return n.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,40)||"jugador"}
-function normPlayer(p){p=p||{};return{name:String(p.name||"Jugador").slice(0,16),total:+p.total||0,games:(p.games&&typeof p.games==="object")?JSON.parse(JSON.stringify(p.games)):{},medals:Array.isArray(p.medals)?p.medals.slice(0,100):[],puzzles:Array.isArray(p.puzzles)?p.puzzles.slice():[],sopaLevel:Math.min(50,Math.max(1,+p.sopaLevel||1)),levels:(p.levels&&typeof p.levels==="object")?{...p.levels}:{},updated:+p.updated||0}}
+function normPlayer(p){p=p||{};return{name:String(p.name||"Jugador").slice(0,16),total:+p.total||0,games:(p.games&&typeof p.games==="object")?JSON.parse(JSON.stringify(p.games)):{},medals:Array.isArray(p.medals)?p.medals.slice(0,100):[],puzzles:Array.isArray(p.puzzles)?p.puzzles.slice():[],sopaLevel:Math.min(50,Math.max(1,+p.sopaLevel||1)),levels:(p.levels&&typeof p.levels==="object")?{...p.levels}:{},code:typeof p.code==="string"&&/^MJ-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(p.code)?p.code:undefined,updated:+p.updated||0}}
 function lsSave(){try{localStorage.setItem(LS,JSON.stringify(Store.players))}catch(e){}}
 try{const j=JSON.parse(localStorage.getItem(LS)||"{}");if(j&&typeof j==="object")Object.keys(j).forEach(id=>Store.players[id]=normPlayer(j[id]));lastMe=localStorage.getItem(LS+"-me")}catch(e){}
 if(lastMe&&Store.players[lastMe])ME=lastMe;
@@ -1480,4 +1483,7 @@ requestAnimationFrame(hostLoop);
 </script>
 
 <!-- END-GAME -->
+<!-- Puntos online (opcional): Supabase. Rellena supabase-config.js para activarlo. -->
+<script src="supabase-config.js"></script>
+<script src="supa.js"></script>
 </body></html>
