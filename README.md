@@ -7,9 +7,10 @@ Juegos de fans sobre Michael Jackson para jugar en el móvil o el ordenador, pre
 - **Línea del tiempo**: ordena los momentos de su carrera.
 - **Parejas brillantes**: juego de memoria con curiosidades.
 - **Puzles**: nueve dibujos originales, de 3×3 a 5×5.
-- **Sopa de letras**: cinco niveles, con palabras al revés y letras trampa.
+- **Sopa de letras**: palabras al revés, en diagonal y letras trampa.
+- **Gira mundial**: juego de mesa original. Compra escenarios por ciudades de todo el mundo y gana a los rivales del ordenador.
 
-Cada juego tiene 5 niveles que se desbloquean jugando. Hay puntos, récords y medallas por jugador, una copia de seguridad del progreso y, si se activa Firebase, guardado online con cuenta de Google y una clasificación mundial.
+Cada juego tiene 50 niveles que se desbloquean jugando. Hay puntos, récords y medallas por jugador, una copia de seguridad del progreso y, si se activa Firebase, guardado online con cuenta de Google y una clasificación mundial.
 
 > Juego de fans no oficial. No está afiliado a Michael Jackson, a sus herederos ni a sus discográficas. No incluye canciones, fotos ni logotipos oficiales: los dibujos y los sonidos son originales.
 
@@ -67,6 +68,13 @@ window.FIREBASE_CONFIG = {
 
 Los datos de `firebase-config.js` no son secretos: es normal que estén en una web pública. Lo que protege la información son las reglas de Firestore del paso 2.3.
 
+## Avisar de una versión nueva
+
+La web consulta `version.json` cada minuto. Cuando ese número cambia, a quien esté jugando le sale un aviso para actualizar, sin perder su progreso.
+
+- Si Claude te prepara los cambios, `version.json` ya va actualizado.
+- Si cambias `index.html` a mano en GitHub, cambia también el número de `version.json` (por ejemplo, pon la fecha y hora: `{"version":"20261103-1830"}`). Si no lo cambias, nadie recibe el aviso.
+
 ## Cómo se guarda el progreso
 
 | Situación | Dónde se guarda |
@@ -88,5 +96,6 @@ Si el juego lo van a usar niños, conviene que el apodo no sea su nombre real. E
 | `index.html` | El juego completo |
 | `cloud.js` | Guardado online y clasificación mundial |
 | `firebase-config.js` | Tu configuración de Firebase (empieza en `null`) |
+| `version.json` | Número de versión para avisar de actualizaciones |
 | `firestore.rules` | Reglas de seguridad para pegar en Firebase |
 | `manifest.webmanifest`, `icon-*.png`, `icon.svg` | Icono y nombre al añadirlo a la pantalla de inicio |
