@@ -131,9 +131,14 @@ button:focus-visible{outline:3px solid var(--spot);outline-offset:2px}
 .ws .cell.hint{box-shadow:inset 0 0 0 3px var(--spot)}
 .ws[data-n="11"],.ws[data-n="12"]{gap:2px}
 .ws[data-n="11"] .cell,.ws[data-n="12"] .cell{font-size:clamp(12px,3.6vw,18px);border-radius:4px}
+.ws[data-n="13"],.ws[data-n="14"]{gap:2px}
+.ws[data-n="13"] .cell,.ws[data-n="14"] .cell{font-size:clamp(11px,3.2vw,16px);border-radius:3px}
 #sLevels .btn{padding:7px 12px;font-size:13px}
 #sLevels .btn:disabled{opacity:.45;cursor:default}
-.lvls .btn{padding:7px 12px;font-size:13px}
+.lvls .btn,#sLevels .btn{padding:7px 14px;font-size:15px}
+.lvlabel{font-weight:900;min-width:7.5em;text-align:center;font-variant-numeric:tabular-nums}
+.lvlabel b{color:var(--spot);font-size:20px}
+.lvlabel small{color:var(--muted);font-weight:700}
 .lvls .btn:disabled{opacity:.45;cursor:default}
 .mem[data-c="5"] .card,.mem[data-c="6"] .card{font-size:clamp(20px,6vw,32px);border-radius:10px}
 body.fixbubble .bubble{height:7.4em;overflow-y:auto}
@@ -400,7 +405,7 @@ BANK.push(
 );
 let Q={qs:[],i:0,score:0,res:[],locked:false};
 function startQuiz(){
-  const lv=lvCurrent("quiz"),cfg=QLV[lv];Q.lv=lv;Q.cfg=cfg;renderLv("quiz",lv,startQuiz);
+  const lv=lvCurrent("quiz"),cfg=qcfg(lv);Q.lv=lv;Q.cfg=cfg;renderLv("quiz",lv,startQuiz);
   const pool=BANK.filter(o=>o.d<=cfg.d&&(!cfg.hard||o.d>=2));
   Q.qs=shuffle(pool).slice(0,cfg.q).map(o=>({...o,opts:shuffle(o.a.slice(0,cfg.o).map((t,n)=>({t,ok:n===0})))}));
   beginRun("quiz");Q.i=0;Q.score=0;Q.res=[];$("qMedal").hidden=true;$("qAgain").hidden=true;$("qText").hidden=false;ask();
@@ -420,7 +425,7 @@ function qPick(n,b){
   if(Q.locked)return;Q.locked=true;clearInterval(Q.tm);$("qTime").textContent="";const q=Q.qs[Q.i],ok=n>=0&&q.opts[n].ok;
   [...$("qAnswers").children].forEach((x,k)=>{x.disabled=true;if(q.opts[k].ok)x.classList.add("ok")});
   if(ok)SFX.ok();else{if(b)b.classList.add("no");SFX.bad()}
-  Q.res[Q.i]=ok;if(ok){Q.score++;addPoints("quiz",10)}qScoreTxt();qDots();
+  Q.res[Q.i]=ok;if(ok){Q.score++;addPoints("quiz",8+2*Q.lv)}qScoreTxt();qDots();
   const lead=ok?rnd(PRAISE):(n<0?"¡Se acabó el tiempo!":rnd(OOPS))+` Era <strong>${q.opts.find(o=>o.ok).t}</strong>.`;
   const at=Q.i;say(`${lead} ${q.f}`,()=>{if(Q.i===at&&!$("v-quiz").hidden)setTimeout(()=>{Q.i++;Q.i<Q.qs.length?ask():endQuiz()},600)});
 }
@@ -428,7 +433,7 @@ function endQuiz(){
   $("qText").hidden=true;$("qAnswers").innerHTML="";qDots();const t=Q.qs.length,s=Q.score;
   const [title,msg]=s===t?["Maestra del Moonwalk","¡Todas bien! ¡Sabes más del Rey del Pop que yo!"]:s>=t*.75?["Fan de Thriller","¡Casi perfecto! Eres una fan de verdad."]:s>=t*.4?["Bailarina de Bad","¡Muy bien! Un par de partidas más y serás experta."]:["Aprendiz del Pop","¡Has aprendido un montón de cosas nuevas! Prueba otra vez."];
   $("qMedal").hidden=false;$("qMedal").innerHTML=`<span class="eyebrow">Tu medalla</span><span class="big">${title}</span><span>${s} de ${t} aciertos</span>`;
-  finishRun("quiz",s>=t*.4?title:null);const up=s>=Math.ceil(t*.7)&&Q.lv<LVMAX;if(s>=Math.ceil(t*.7))lvUp("quiz",Q.lv);renderLv("quiz",lvCurrent("quiz"),startQuiz);
+  finishRun("quiz",s>=t*.4?title:null);const up=s>=Math.ceil(t*Q.cfg.pass)&&Q.lv<LVMAX;if(s>=Math.ceil(t*Q.cfg.pass))lvUp("quiz",Q.lv);renderLv("quiz",lvCurrent("quiz"),startQuiz);
   $("qAgain").textContent=up?`Jugar nivel ${Q.lv+1}`:"Jugar otra vez";$("qAgain").hidden=false;SFX.applause();
   say(`¡Fin del espectáculo! Has acertado ${s} de ${t}. Tu medalla es: <strong>${title}</strong>. ${msg}${up?` ¡Y has desbloqueado el nivel ${Q.lv+1}!`:""}`);
 }
@@ -451,7 +456,7 @@ function startRhythm(){
   if(!A()){say("Este dispositivo no deja sonar música aquí. Prueba a abrir el enlace en Safari o Chrome.");return}
   sayId++;hush();
   if(!soundOn){soundOn=true;$("sound").click();$("sound").click()}
-  R.lv=lvCurrent("rhythm");const RL=RLV[R.lv];R.spb=60/RL.bpm;R.total=RL.total;R.wp=RL.p;R.wg=RL.g;
+  R.lv=lvCurrent("rhythm");const RL=rcfg(R.lv);R.spb=60/RL.bpm;R.total=RL.total;R.wp=RL.p;R.wg=RL.g;R.off=RL.off;R.pass=RL.pass;
   R.bus=ac.createGain();R.bus.gain.value=1;R.bus.connect(master);
   const t0=ac.currentTime+.4,spb=R.spb,n=R.countIn+R.total;R.t0=t0;R.targets=[];R.judged=[];
   for(let k=0;k<n;k++){
@@ -462,6 +467,7 @@ function startRhythm(){
     bass(t,BASSLINE[(k*2)%8],R.bus);bass(t+spb/2,BASSLINE[(k*2+1)%8],R.bus);
     if((k-R.countIn)%8===7){[440,523.3,659.3].forEach(f=>tone(f,t+spb/2,.25,"sawtooth",.04,null,R.bus))}
     R.targets.push(t);R.judged.push(null);
+    if(R.off&&k<n-1&&Math.random()<R.off){SFX.snap(t+spb/2,R.bus);R.targets.push(t+spb/2);R.judged.push(null)}
   }
   beginRun("rhythm");R.endT=t0+n*spb+.3;R.score=0;R.streak=0;R.best=0;R.perfect=0;R.flash="";
   R.x=R.tx=stageW()*0.8;R.running=true;
@@ -495,11 +501,11 @@ function loopRhythm(){
   R.raf=requestAnimationFrame(loopRhythm);
 }
 function endRhythm(){
-  stopRhythm();const max=R.total*2,pct=R.score/max;
+  stopRhythm();const max=R.targets.length*2,pct=R.score/max;
   $("rTap").textContent="▶ Otra vez";$("rInfo").textContent="¡Fin del baile!";drawStage();
   const title=pct>=.85?"Leyenda del Moonwalk":pct>=.6?"Bailarina estrella":pct>=.3?"Buen ritmo":"Aprendiz de baile";
   addPoints("rhythm",R.score);finishRun("rhythm",pct>=.6?title:null);
-  const up=pct>=.6&&R.lv<LVMAX;if(pct>=.6)lvUp("rhythm",R.lv);renderLv("rhythm",lvCurrent("rhythm"),()=>{stopRhythm();rhythmIntro()});
+  const up=pct>=R.pass&&R.lv<LVMAX;if(pct>=R.pass)lvUp("rhythm",R.lv);renderLv("rhythm",lvCurrent("rhythm"),()=>{stopRhythm();rhythmIntro()});
   if(pct>=.3)SFX.applause();
   say(`¡Qué baile! Has hecho ${R.score} puntos de ${max}, con ${R.perfect} pasos perfectos. Tu título: <strong>${title}</strong>.${up?` ¡Has desbloqueado el nivel ${R.lv+1}, con música más rápida!`:" ¿Lo intentamos otra vez?"}`);
 }
@@ -537,7 +543,7 @@ const EVENTS=[
 EVENTS.push({y:1972,t:"Sale Got to Be There, su primer disco en solitario"},{y:1984,t:"Gana ocho premios Grammy en una sola noche"},{y:1995,t:"Sale el disco doble HIStory"});
 let T={ev:[],placed:0,mistakes:0};
 function startTimeline(){
-  T.lv=lvCurrent("timeline");renderLv("timeline",T.lv,startTimeline);T.ev=shuffle(EVENTS).slice(0,[0,3,4,5,6,7][T.lv]).sort((a,b)=>a.y-b.y);beginRun("timeline");T.placed=0;T.mistakes=0;
+  T.lv=lvCurrent("timeline");renderLv("timeline",T.lv,startTimeline);T.ev=shuffle(EVENTS).slice(0,tcount(T.lv)).sort((a,b)=>a.y-b.y);beginRun("timeline");T.placed=0;T.mistakes=0;
   $("tMedal").hidden=true;$("tAgain").hidden=true;
   $("tTrack").innerHTML=T.ev.map((_,n)=>`<div class="slot" id="ts${n}"><span class="yr">····</span><span>${n===0?"¿Qué pasó primero?":""}</span></div>`).join("");
   $("tPicks").innerHTML="";
@@ -547,7 +553,7 @@ function startTimeline(){
 function tPick(e,b){
   const want=T.ev[T.placed];
   if(e===want){
-    SFX.ok();addPoints("timeline",10);const s=$("ts"+T.placed);s.classList.add("filled");s.innerHTML=`<span class="yr">${e.y}</span><span>${e.t}</span>`;b.remove();T.placed++;
+    SFX.ok();addPoints("timeline",8+2*T.lv);const s=$("ts"+T.placed);s.classList.add("filled");s.innerHTML=`<span class="yr">${e.y}</span><span>${e.t}</span>`;b.remove();T.placed++;
     if(T.placed<T.ev.length){$("ts"+T.placed).lastElementChild.textContent="¿Y después?";say(`¡Sí! En ${e.y}: ${e.t}. ¿Qué pasó después?`)}
     else endTimeline();
   }else{
@@ -558,7 +564,7 @@ function tPick(e,b){
 function endTimeline(){
   SFX.applause();$("tMedal").hidden=false;$("tAgain").hidden=false;
   const title=T.mistakes===0?"Guardiana del tiempo":T.mistakes<=2?"Gran historiadora":"Viajera del tiempo";
-  finishRun("timeline",title);const up=T.mistakes<=1&&T.lv<LVMAX;if(T.mistakes<=1)lvUp("timeline",T.lv);renderLv("timeline",lvCurrent("timeline"),startTimeline);
+  finishRun("timeline",title);const up=T.mistakes<=tAllow(T.lv)&&T.lv<LVMAX;if(T.mistakes<=tAllow(T.lv))lvUp("timeline",T.lv);renderLv("timeline",lvCurrent("timeline"),startTimeline);
   $("tMedal").innerHTML=`<span class="eyebrow">Tu medalla</span><span class="big">${title}</span><span>${T.mistakes===0?"¡Sin ningún fallo!":T.mistakes+(T.mistakes===1?" fallo":" fallos")}</span>`;
   say((up?"¡Has desbloqueado el siguiente nivel, con más cosas que ordenar! ":"")+`¡Historia ordenada! ${T.mistakes===0?"Y sin ningún fallo.":"Solo "+T.mistakes+(T.mistakes===1?" fallo.":" fallos.")} Tu medalla es: <strong>${title}</strong>.`);
 }
@@ -583,10 +589,10 @@ PAIRS.push(
 );
 let M={cards:[],open:[],moves:0,found:0,busy:false};
 function startMemory(){
-  M.lv=lvCurrent("memory");renderLv("memory",M.lv,startMemory);const pp=shuffle(PAIRS).slice(0,[0,4,6,8,10,12][M.lv]);M.total=pp.length;
+  M.lv=lvCurrent("memory");renderLv("memory",M.lv,startMemory);const pp=shuffle(PAIRS).slice(0,mpairs(M.lv));M.total=pp.length;
   M.cards=shuffle([...pp,...pp].map(p=>({...p,done:false})));beginRun("memory");M.open=[];M.moves=0;M.found=0;M.busy=false;
   $("mMedal").hidden=true;$("mAgain").hidden=true;mStrip();
-  $("mGrid").innerHTML="";const mc=M.total*2>=24?6:M.total*2>=20?5:4;$("mGrid").style.gridTemplateColumns=`repeat(${mc},1fr)`;$("mGrid").dataset.c=mc;
+  $("mGrid").innerHTML="";const mc=M.total*2>=26?6:M.total*2>=20?5:4;$("mGrid").style.gridTemplateColumns=`repeat(${mc},1fr)`;$("mGrid").dataset.c=mc;
   M.cards.forEach((c,n)=>{const b=document.createElement("button");b.className="card back";b.id="mc"+n;b.textContent="✦";b.setAttribute("aria-label","Carta "+(n+1));b.onclick=()=>mFlip(n);$("mGrid").appendChild(b)});
   say("¡Parejas brillantes! Da la vuelta a dos cartas. Si son iguales, te cuento una curiosidad.");
 }
@@ -598,7 +604,7 @@ function mFlip(n){
   if(M.open.length<2)return;
   M.moves++;const [a,z]=M.open;
   if(M.cards[a].e===M.cards[z].e){
-    M.cards[a].done=M.cards[z].done=true;[a,z].forEach(k=>$("mc"+k).classList.add("done"));M.open=[];M.found++;SFX.sparkle();addPoints("memory",10);mStrip();
+    M.cards[a].done=M.cards[z].done=true;[a,z].forEach(k=>$("mc"+k).classList.add("done"));M.open=[];M.found++;SFX.sparkle();addPoints("memory",8+2*M.lv);mStrip();
     if(M.found===M.total)setTimeout(endMemory,500);else say(`¡Pareja! ${c.f}`);
   }else{
     M.busy=true;mStrip();
@@ -608,7 +614,7 @@ function mFlip(n){
 function endMemory(){
   SFX.applause();$("mMedal").hidden=false;$("mAgain").hidden=false;
   const title=M.moves<=M.total*1.6?"Memoria de diamante":M.moves<=M.total*2.4?"Memoria brillante":"Buscadora de brillos";
-  finishRun("memory",title);const ok2=M.moves<=M.total*2.5,up=ok2&&M.lv<LVMAX;if(ok2)lvUp("memory",M.lv);renderLv("memory",lvCurrent("memory"),startMemory);
+  finishRun("memory",title);const ok2=M.moves<=Math.ceil(M.total*mAllow(M.lv)),up=ok2&&M.lv<LVMAX;if(ok2)lvUp("memory",M.lv);renderLv("memory",lvCurrent("memory"),startMemory);
   $("mMedal").innerHTML=`<span class="eyebrow">Tu medalla</span><span class="big">${title}</span><span>Todas las parejas en ${M.moves} intentos</span>`;
   say((up?"¡Nivel superado! La próxima vez habrá más cartas. ":"")+`¡Todas las parejas! Lo has conseguido en ${M.moves} intentos. Tu medalla es: <strong>${title}</strong>.`);
 }
@@ -762,7 +768,7 @@ let P={i:0,n:3,order:[],sel:-1,moves:0,done:false},PIMG=[];
 function sceneURL(i){const cv=document.createElement("canvas");cv.width=cv.height=600;PUZ[i].d(cv.getContext("2d"));return cv.toDataURL("image/jpeg",.88)}
 function puzzleGallery(){
   if(!PIMG.length)PIMG=PUZ.map((_,i)=>sceneURL(i));
-  P.lv=lvCurrent("puzzle");P.n=PLV[P.lv].n;renderLv("puzzle",P.lv,puzzleGallery);$("pEasy").parentElement.hidden=true;
+  P.lv=lvCurrent("puzzle");P.n=pcfg(P.lv).n;renderLv("puzzle",P.lv,puzzleGallery);$("pEasy").parentElement.hidden=true;
   $("pPick").hidden=false;$("pPlay").hidden=true;$("pGallery").innerHTML="";
   PUZ.forEach((p,i)=>{const b=document.createElement("button");b.className="pthumb";b.id="pg"+i;b.innerHTML=`<img src="${PIMG[i]}" alt=""><span>${donePuzzle(i)?"✅ ":""}${p.n}</span>`;b.onclick=()=>{SFX.whoosh();startPuzzle(i)};$("pGallery").appendChild(b)});
   say("¡Puzles! Elige un dibujo. Cada puzle que termines desbloquea un nivel más difícil. Para mover las piezas, toca una y después otra para cambiarlas de sitio.");
@@ -772,7 +778,7 @@ $("pEasy").onclick=()=>setSize(3);$("pHard").onclick=()=>setSize(4);
 function startPuzzle(i){
   beginRun("puzzle");P.i=i;P.sel=-1;P.moves=0;P.done=false;const N=P.n*P.n;
   do{P.order=shuffle([...Array(N).keys()])}while(P.order.filter((v,k)=>v===k).length>Math.floor(N/4));
-  $("pPick").hidden=true;$("pPlay").hidden=false;$("pTitle").textContent=PUZ[i].n;$("pPreview").src=PIMG[i];$("pPreview").parentElement.hidden=!PLV[P.lv].prev;$("pResult").hidden=true;$("pNext").hidden=true;
+  $("pPick").hidden=true;$("pPlay").hidden=false;$("pTitle").textContent=PUZ[i].n;$("pPreview").src=PIMG[i];$("pPreview").parentElement.hidden=!pcfg(P.lv).prev;$("pResult").hidden=true;$("pNext").hidden=true;
   renderBoard();say(`¡A montar ${PUZ[i].n}! Las piezas que ya están en su sitio se quedan quietas.`);
 }
 function renderBoard(){
@@ -828,7 +834,7 @@ const SLV=[null,
  {n:11,w:8,dirs:[[1,0],[0,1],[1,1],[-1,0],[0,-1]],hints:3,decoy:1,txt:"en línea recta o en diagonal, ¡y algunas al revés!"},
  {n:12,w:9,dirs:ALLD,hints:2,decoy:2,txt:"en todas las direcciones, también al revés"},
  {n:12,w:10,dirs:ALLD,hints:1,decoy:3,txt:"en todas las direcciones, ¡y hay palabras trampa a medio escribir!"}];
-const SMAX=5;let sopaLevelGuest=1,sopaPick=null;
+const SMAX=50;let sopaLevelGuest=1,sopaPick=null;
 function unlocked(){const p=cur();return Math.min(SMAX,Math.max(1,p?(p.sopaLevel||1):sopaLevelGuest))}
 function placeWord(o,dirs){const n=S.n,L=o.w.length;
   for(let t=0;t<400;t++){const [dx,dy]=rnd(dirs),x0=Math.floor(Math.random()*n),y0=Math.floor(Math.random()*n),x1=x0+dx*(L-1),y1=y0+dy*(L-1);
@@ -837,10 +843,11 @@ function placeWord(o,dirs){const n=S.n,L=o.w.length;
     if(fit){for(let k=0;k<L;k++)S.grid[(y0+dy*k)*n+x0+dx*k]=o.w[k];o.first=y0*n+x0;return true}}
   return false}
 function startSopa(){
-  const u=unlocked(),lv=sopaPick&&sopaPick<=u?sopaPick:u,cfg=SLV[lv];S.level=lv;S.n=cfg.n;S.hints=cfg.hints;
+  const u=unlocked(),lv=sopaPick&&sopaPick<=u?sopaPick:u,cfg=scfg(lv);S.level=lv;S.n=cfg.n;S.hints=cfg.hints;
   let ok=false,tries=0;
   while(!ok&&tries<60){tries++;ok=true;S.grid=Array(S.n*S.n).fill("");S.words=shuffle(WORDS).slice(0,cfg.w).map(o=>({...o})).sort((a,b)=>b.w.length-a.w.length);
     for(const o of S.words){if(!placeWord(o,cfg.dirs)){ok=false;break}}}
+  if(!ok)S.words=S.words.filter(o=>o.first!==undefined);
   if(cfg.decoy){const pool=shuffle(WORDS.filter(o=>o.w.length>=6));for(let k=0;k<cfg.decoy*2;k++){const src=pool[k%pool.length];placeWord({w:src.w.slice(0,3+Math.floor(Math.random()*2))},cfg.dirs)}}
   const used=S.words.map(o=>o.w).join(""),AL="ABCDEFGHIJLMNOPRSTUVYZ";
   S.grid=S.grid.map(ch=>ch||(cfg.decoy&&Math.random()<.6?used[Math.floor(Math.random()*used.length)]:AL[Math.floor(Math.random()*AL.length)]));
@@ -851,8 +858,7 @@ function startSopa(){
   say(`¡Sopa de letras, <strong>nivel ${lv}</strong>! Hay ${cfg.w} palabras escondidas. Van ${cfg.txt}.`);
 }
 function updateHint(){const b=$("sHint");b.textContent=S.hints>5?"💡 Pista":S.hints>0?`💡 Pista (${S.hints})`:"💡 Sin pistas";b.disabled=S.hints<=0}
-function renderLevels(){const u=unlocked(),el=$("sLevels");el.innerHTML="";
-  for(let k=1;k<=SMAX;k++){const b=document.createElement("button");b.className="btn ghost";b.id="sl"+k;b.textContent=k<=u?`Nivel ${k}`:`🔒 ${k}`;b.disabled=k>u;b.setAttribute("aria-pressed",k===S.level);b.onclick=()=>{sopaPick=k;SFX.flip();startSopa()};el.appendChild(b)}}
+function renderLevels(){stepper($("sLevels"),S.level,unlocked(),k=>{sopaPick=k;SFX.flip();startSopa()})}
 function startSopaOld(){
   let ok=false;
   while(!ok){ok=true;S.grid=Array(100).fill("");S.words=shuffle(WORDS).slice(0,7).map(o=>({...o})).sort((a,b)=>b.w.length-a.w.length);
@@ -890,7 +896,7 @@ function checkLine(a,b){
   if(cells){
     const word=cells.map(c=>S.grid[c]).join(""),rev=[...word].reverse().join("");
     const hit=S.words.find(o=>!S.found.includes(o)&&(o.w===word||o.w===rev));
-    if(hit){S.found.push(hit);addPoints("sopa",10*S.level);const col=WCOL[S.words.indexOf(hit)%WCOL.length];cells.forEach(c=>S.cellCol[c]=col);SFX.ok();updateSopa();
+    if(hit){S.found.push(hit);addPoints("sopa",8+2*S.level);const col=WCOL[S.words.indexOf(hit)%WCOL.length];cells.forEach(c=>S.cellCol[c]=col);SFX.ok();updateSopa();
       if(S.found.length===S.words.length)setTimeout(endSopa,300);else say(`¡Has encontrado <strong>${hit.label}</strong>! ${hit.f}`);return}
   }
   SFX.bad();updateSopa();say("¡Esa no es! Prueba otra vez.");
@@ -901,7 +907,7 @@ $("sHint").onclick=()=>{if(S.hints<=0||S.found.length===S.words.length)return;S.
   SFX.sparkle();say(`Pista: la palabra <strong>${o.label}</strong> empieza en la letra marcada.`);
 };
 function endSopa(){
-  const lv=S.level,medal=lv>=SMAX?"Detective del Pop · Nivel máximo":`Detective del Pop · Nivel ${lv}`,next=Math.min(SMAX,lv+1);
+  const lv=S.level,medal=lv>=SMAX?"Detective del Pop · Nivel máximo":"Detective del Pop",next=Math.min(SMAX,lv+1);if([10,25,50].includes(next)){const pp=cur();const m=`Sopa de letras · nivel ${next}`;if(pp&&!pp.medals.includes(m))pp.medals.push(m)}
   finishRun("sopa",medal);sopaPick=null;const p=cur();
   if(p){if((p.sopaLevel||1)<next){p.sopaLevel=next;p.updated=Date.now();savePlayer(ME)}}else sopaLevelGuest=Math.max(sopaLevelGuest,next);
   SFX.applause();$("sMedal").hidden=false;$("sAgain").hidden=false;renderLevels();
@@ -924,7 +930,7 @@ const Store={db:null,players:{},writing:{},dirty:{}};
 const RUN={};let ME=null,lastMe=null,pendingGame=null;
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function slug(n){return n.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,40)||"jugador"}
-function normPlayer(p){p=p||{};return{name:String(p.name||"Jugador").slice(0,16),total:+p.total||0,games:(p.games&&typeof p.games==="object")?JSON.parse(JSON.stringify(p.games)):{},medals:Array.isArray(p.medals)?p.medals.slice(0,100):[],puzzles:Array.isArray(p.puzzles)?p.puzzles.slice():[],sopaLevel:Math.min(5,Math.max(1,+p.sopaLevel||1)),levels:(p.levels&&typeof p.levels==="object")?{...p.levels}:{},updated:+p.updated||0}}
+function normPlayer(p){p=p||{};return{name:String(p.name||"Jugador").slice(0,16),total:+p.total||0,games:(p.games&&typeof p.games==="object")?JSON.parse(JSON.stringify(p.games)):{},medals:Array.isArray(p.medals)?p.medals.slice(0,100):[],puzzles:Array.isArray(p.puzzles)?p.puzzles.slice():[],sopaLevel:Math.min(50,Math.max(1,+p.sopaLevel||1)),levels:(p.levels&&typeof p.levels==="object")?{...p.levels}:{},updated:+p.updated||0}}
 function lsSave(){try{localStorage.setItem(LS,JSON.stringify(Store.players))}catch(e){}}
 try{const j=JSON.parse(localStorage.getItem(LS)||"{}");if(j&&typeof j==="object")Object.keys(j).forEach(id=>Store.players[id]=normPlayer(j[id]));lastMe=localStorage.getItem(LS+"-me")}catch(e){}
 if(lastMe&&Store.players[lastMe])ME=lastMe;
@@ -951,7 +957,7 @@ function beginRun(g){RUN[g]=0;renderPts(g)}
 function addPoints(g,n){if(!n)return;RUN[g]=(RUN[g]||0)+n;const p=cur();if(p){p.total+=n;gstat(p,g).pts+=n;p.updated=Date.now();savePlayer(ME)}renderMe()}
 function finishRun(g,medal){const p=cur();if(!p)return;const s=gstat(p,g);s.plays++;s.best=Math.max(s.best||0,RUN[g]||0);if(medal&&!p.medals.includes(medal))p.medals.push(medal);p.updated=Date.now();savePlayer(ME);renderMe()}
 function donePuzzle(i){const p=cur();return !!(p&&p.puzzles.includes(i))}
-function puzzleDone(){addPoints("puzzle",PLV[P.lv].pts);const p=cur();let medal=P.lv>=4?"Experta en puzles":null;if(p){if(!p.puzzles.includes(P.i))p.puzzles.push(P.i);if(p.puzzles.length>=PUZ.length)medal="Coleccionista de puzles"}finishRun("puzzle",medal);P.up=P.lv<LVMAX;lvUp("puzzle",P.lv);renderLv("puzzle",lvCurrent("puzzle"),puzzleGallery)}
+function puzzleDone(){addPoints("puzzle",pcfg(P.lv).pts);const p=cur();let medal=P.lv>=4?"Experta en puzles":null;if(p){if(!p.puzzles.includes(P.i))p.puzzles.push(P.i);if(p.puzzles.length>=PUZ.length)medal="Coleccionista de puzles"}finishRun("puzzle",medal);P.up=P.lv<LVMAX;lvUp("puzzle",P.lv);renderLv("puzzle",lvCurrent("puzzle"),puzzleGallery)}
 /* points strip under each game's title */
 Object.keys(GAMES).forEach(g=>{const v=$("v-"+g),tb=v&&v.querySelector(".topbar");if(tb){const d=document.createElement("div");d.className="pbar";d.id="pts-"+g;tb.after(d)}});
 function renderPts(g){const el=$("pts-"+g);if(!el)return;const p=cur(),s=p?(p.games[g]||{}):{};
@@ -1022,16 +1028,72 @@ $("bkFile").addEventListener("change",e=>{const f=e.target.files&&e.target.files
 });
 
 /* ================= LEVELS (every game gets harder) ================= */
-const LVMAX=5,guestLv={},pickLv={};
-const QLV=[null,{q:6,o:3,d:1,t:0},{q:8,o:4,d:2,t:0},{q:8,o:4,d:2,t:30},{q:10,o:4,d:3,t:20},{q:10,o:4,d:3,t:14,hard:true}];
-const RLV=[null,{bpm:88,total:16,p:.11,g:.22},{bpm:100,total:24,p:.1,g:.2},{bpm:112,total:24,p:.09,g:.18},{bpm:124,total:32,p:.08,g:.16},{bpm:136,total:32,p:.07,g:.14}];
-const PLV=[null,{n:3,prev:true,pts:30},{n:4,prev:true,pts:60},{n:4,prev:false,pts:80},{n:5,prev:true,pts:100},{n:5,prev:false,pts:150}];
+const LVMAX=50,guestLv={},pickLv={};
+/* Difficulty grows level by level (1-50) */
+function qcfg(lv){return{q:Math.min(BANK.length,5+lv),o:lv===1?3:4,d:lv<=1?1:lv<=3?2:3,t:lv<3?0:Math.max(5,Math.round(30*Math.pow(.93,lv-3))),hard:lv>=6,pass:Math.min(1,.6+lv*.01)}}
+function rcfg(lv){return{bpm:Math.min(176,84+lv*4),total:Math.min(48,12+lv*2),p:Math.max(.045,.115-lv*.003),g:Math.max(.09,.23-lv*.006),off:lv>=6?Math.min(.5,(lv-5)*.04):0,pass:Math.min(.9,.55+lv*.01)}}
+function pcfg(lv){const n=Math.min(7,3+Math.floor((lv-1)/3));return{n,prev:lv%3!==0,pts:n*n*4+lv*5}}
+function tcount(lv){return Math.min(EVENTS.length,2+lv)}
+function tAllow(lv){return Math.max(0,2-Math.floor(lv/6))}
+function mpairs(lv){return Math.min(15,PAIRS.length,3+lv)}
+function mAllow(lv){return Math.max(1.5,2.6-lv*.04)}
+function scfg(lv){
+  const dirs=lv<=2?[[1,0],[0,1]]:lv<=4?[[1,0],[0,1],[1,1]]:lv<=6?[[1,0],[0,1],[1,1],[-1,0],[0,-1]]:ALLD;
+  const txt=lv<=2?"hacia la derecha o hacia abajo":lv<=4?"hacia la derecha, hacia abajo o en diagonal":lv<=6?"en línea recta o en diagonal, ¡y algunas al revés!":"en todas las direcciones, también al revés";
+  const decoy=Math.max(0,Math.min(8,Math.floor((lv-3)/2)));
+  return{n:Math.min(14,9+Math.ceil(lv/2)),w:Math.min(WORDS.length,5+lv),dirs,hints:lv<=3?99:Math.max(0,4-Math.floor(lv/4)),decoy,txt:txt+(decoy?". ¡Cuidado con las palabras trampa!":"")}}
 function lvUnlocked(g){const p=cur();return Math.min(LVMAX,Math.max(1,p?((p.levels||{})[g]||1):(guestLv[g]||1)))}
 function lvCurrent(g){const u=lvUnlocked(g);return pickLv[g]&&pickLv[g]<=u?pickLv[g]:u}
 function lvUp(g,lv){pickLv[g]=null;const next=Math.min(LVMAX,lv+1),p=cur();
-  if(p){p.levels=p.levels||{};if((p.levels[g]||1)<next){p.levels[g]=next;p.updated=Date.now();savePlayer(ME)}}else guestLv[g]=Math.max(guestLv[g]||1,next);return next}
-function renderLv(g,lv,restart){const el=$("lv-"+g);if(!el)return;const u=lvUnlocked(g);el.innerHTML="";
-  for(let k=1;k<=LVMAX;k++){const b=document.createElement("button");b.className="btn ghost";b.id=`lv-${g}-${k}`;b.textContent=k<=u?`Nivel ${k}`:`🔒 ${k}`;b.disabled=k>u;b.setAttribute("aria-pressed",k===lv);b.onclick=()=>{pickLv[g]=k;SFX.flip();restart()};el.appendChild(b)}}
+  if(p){p.levels=p.levels||{};if((p.levels[g]||1)<next){p.levels[g]=next;if([10,25,50].includes(next)){const m=`${GAMES[g]} · nivel ${next}`;if(!p.medals.includes(m))p.medals.push(m)}p.updated=Date.now();savePlayer(ME)}}else guestLv[g]=Math.max(guestLv[g]||1,next);return next}
+function stepper(el,lv,u,pick){if(!el)return;el.innerHTML="";
+  const mk=(t,id,dis,fn,label)=>{const b=document.createElement("button");b.className="btn ghost";b.id=id;b.textContent=t;b.disabled=dis;if(label)b.setAttribute("aria-label",label);b.onclick=fn;el.appendChild(b)};
+  mk("◀",el.id+"-prev",lv<=1,()=>pick(lv-1),"Nivel anterior");
+  const s=document.createElement("span");s.className="lvlabel";s.innerHTML=`Nivel <b>${lv}</b> <small>de ${LVMAX}</small>`;el.appendChild(s);
+  mk(lv>=u&&u<LVMAX?"🔒":"▶",el.id+"-next",lv>=u,()=>pick(lv+1),"Nivel siguiente");
+  if(u>lv+1)mk(`Ir al ${u} ⏩`,el.id+"-max",false,()=>pick(u))}
+function renderLv(g,lv,restart){stepper($("lv-"+g),lv,lvUnlocked(g),k=>{pickLv[g]=k;SFX.flip();restart()})}
+/* more content so higher levels have variety */
+BANK.push(
+ {d:2,q:"¿Con qué discográfica empezaron los Jackson 5?",a:["Motown","Sony","Capitol","Atlantic"],f:"Los Jackson 5 firmaron con Motown a finales de los años sesenta."},
+ {d:2,q:"¿En qué película musical de 1978 hizo de Espantapájaros?",a:["The Wiz","Grease","Annie","Fama"],f:"En The Wiz, una versión de El mago de Oz, Michael fue el Espantapájaros."},
+ {d:2,q:"¿Cuántos hermanos cantaban en los Jackson 5, contando a Michael?",a:["Cinco","Tres","Cuatro","Seis"],f:"Eran cinco hermanos: Jackie, Tito, Jermaine, Marlon y Michael."},
+ {d:3,q:"¿Cómo se llama el libro de memorias que publicó en 1988?",a:["Moonwalk","Thriller","Mi vida","Bad"],f:"Su autobiografía, de 1988, se llama Moonwalk."},
+ {d:3,q:"¿En qué gran evento deportivo actuó en el descanso en 1993?",a:["La Super Bowl","Los Juegos Olímpicos","El Mundial de fútbol","La final de la NBA"],f:"Su actuación en la Super Bowl de 1993 la vieron millones de personas."},
+ {d:3,q:"¿Cuál fue su último disco de estudio, de 2001?",a:["Invincible","HIStory","Dangerous","Bad"],f:"Invincible salió en 2001."},
+ {d:3,q:"¿Qué canción de 1972, de una película sobre una rata, cantó Michael en solitario?",a:["Ben","Bad","Beat It","Billie Jean"],f:"Ben era la canción de una película sobre una rata, y llegó al número uno."},
+ {d:3,q:"¿En qué año recibió su estrella en el Paseo de la Fama de Hollywood?",a:["1984","1970","1995","2001"],f:"Recibió su estrella en el Paseo de la Fama en 1984."},
+ {d:3,q:"¿Qué canción de Dangerous dice que no importa si eres blanco o negro?",a:["Black or White","Bad","Thriller","Ben"],f:"Black or White, de 1991, habla de que todos somos iguales."}
+);
+EVENTS.push(
+ {y:1964,t:"Michael empieza a cantar con sus hermanos"},
+ {y:1968,t:"Los Jackson 5 firman con Motown"},
+ {y:1978,t:"Hace de Espantapájaros en la película The Wiz"},
+ {y:1980,t:"Gana su primer Grammy en solitario"},
+ {y:1988,t:"Publica su autobiografía, Moonwalk"},
+ {y:1992,t:"Crea la fundación Heal the World"},
+ {y:1993,t:"Actúa en el descanso de la Super Bowl"},
+ {y:2001,t:"Sale el disco Invincible"}
+);
+PAIRS.push(
+ {e:"⭐",f:"Tiene una estrella en el Paseo de la Fama de Hollywood desde 1984."},
+ {e:"🕶️",f:"Le gustaba llevar gafas de sol de aviador."},
+ {e:"🧦",f:"Sus calcetines blancos brillaban cuando bailaba."},
+ {e:"🐒",f:"Tenía un chimpancé llamado Bubbles."},
+ {e:"🎬",f:"En 1978 actuó en la película musical The Wiz."}
+);
+WORDS.push(
+ {w:"MOTOWN",label:"MOTOWN",f:"Los Jackson 5 empezaron con la discográfica Motown."},
+ {w:"BEN",label:"BEN",f:"Ben fue su primer número uno en solitario, en 1972."},
+ {w:"HISTORY",label:"HISTORY",f:"HIStory salió en 1995 y tenía dos discos."},
+ {w:"INVINCIBLE",label:"INVINCIBLE",f:"Invincible fue su último disco de estudio, en 2001."},
+ {w:"QUINCY",label:"QUINCY",f:"Quincy Jones produjo Off the Wall, Thriller y Bad."},
+ {w:"ESTRELLA",label:"ESTRELLA",f:"Tiene una estrella en el Paseo de la Fama de Hollywood."},
+ {w:"ESCENARIO",label:"ESCENARIO",f:"En el escenario cantaba y bailaba a la vez."},
+ {w:"GIRA",label:"GIRA",f:"Con la gira Bad recorrió medio mundo."},
+ {w:"SUPERBOWL",label:"SUPER BOWL",f:"En 1993 actuó en el descanso de la Super Bowl."},
+ {w:"WIZ",label:"WIZ",f:"En The Wiz hizo de Espantapájaros."}
+);
 ["quiz","rhythm","timeline","memory","puzzle"].forEach(g=>{const pb=$("pts-"+g);if(pb){const d=document.createElement("div");d.className="row seg lvls";d.id="lv-"+g;pb.after(d)}});
 
 /* ================= DESTELLO (sequined microphone) ================= */
