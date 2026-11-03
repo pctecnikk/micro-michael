@@ -107,6 +107,7 @@ button:focus-visible{outline:3px solid var(--spot);outline-offset:2px}
   /* menu: 3 columns, the board game across the bottom */
   .games{grid-template-columns:repeat(3,1fr);gap:16px}
   #go-tour{order:10;grid-column:1/-1}
+  #go-wheel{order:11;grid-column:1/-1}
   .game{padding:22px}
   .game .ico{font-size:36px}
   .game b{font-size:22px}
@@ -151,6 +152,33 @@ button:focus-visible{outline:3px solid var(--spot);outline-offset:2px}
   .pcard{padding:18px 20px}
   .gtable{font-size:16px}
   .nrow input{font-size:19px}
+}
+/* ruleta del pop */
+.wtop{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-weight:800}
+.wcat{color:var(--spot);font-size:18px}
+.wboard{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 16px;background:#0c0a14;border:2px solid var(--line);border-radius:16px;padding:16px 10px}
+.wword{display:inline-flex;gap:4px}
+.wtile{width:clamp(22px,7.5vw,44px);aspect-ratio:3/4;border-radius:6px;background:#f4f1fa;color:#120f1c;display:grid;place-items:center;font-family:var(--display);font-size:clamp(13px,4.6vw,26px);box-shadow:inset 0 -3px 0 rgba(0,0,0,.18)}
+.wtile.on{background:var(--spot);animation:flip .35s}
+@keyframes flip{from{transform:rotateY(90deg)}to{transform:none}}
+.wplay{display:flex;flex-direction:column;gap:14px;align-items:center}
+.wwheelbox{position:relative;width:min(320px,86vw);max-width:100%}
+#wWheel{display:block;width:100%;aspect-ratio:1;border-radius:50%}
+.wkeys{display:flex;flex-direction:column;gap:10px;width:100%}
+.wrow{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.wkey{font:inherit;font-weight:900;font-size:17px;width:40px;height:44px;border-radius:10px;border:2px solid var(--line);background:var(--stage-2);color:var(--ink);cursor:pointer}
+.wkey.vow{border-color:#7fe0ff}
+.wkey.hit{background:var(--good);color:#120f1c;border-color:var(--good)}
+.wkey.miss{opacity:.35;text-decoration:line-through}
+.wkey:disabled{cursor:default}
+.wkey:not(:disabled):hover{border-color:var(--spot)}
+.wsolve{display:flex;flex-direction:column;gap:8px;width:100%}
+@media (min-width:1000px){
+  .wplay{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);align-items:start;gap:28px}
+  .wwheelbox{width:100%;max-width:420px}
+  .wcat{font-size:22px}
+  .wtile{width:clamp(30px,3vw,56px);font-size:clamp(18px,1.8vw,34px)}
+  .wkey{width:52px;height:56px;font-size:21px}
 }
 /* gira mundial */
 .gboard{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:repeat(7,minmax(0,1fr));gap:2px;width:100%;max-width:520px;aspect-ratio:1;margin:0 auto}
@@ -308,6 +336,7 @@ body.fixbubble .bubble{height:7.4em;overflow-y:auto}
       <button class="game" id="go-timeline"><span class="ico">📅</span><b>Línea del tiempo</b><span>Ordena lo que pasó primero y lo que vino después.</span></button>
       <button class="game" id="go-memory"><span class="ico">🧤</span><b>Parejas brillantes</b><span>Encuentra las parejas y descubre curiosidades.</span></button>
       <button class="game" id="go-puzzle"><span class="ico">🧩</span><b>Puzles</b><span>Nueve dibujos para montar, en fácil o difícil.</span></button>
+      <button class="game wide" id="go-wheel"><span class="ico">🎡</span><b>Ruleta del Pop</b><span>Gira la ruleta, adivina letras y resuelve paneles sobre Michael Jackson.</span></button>
       <button class="game wide" id="go-tour"><span class="ico">🌍</span><b>Gira mundial</b><span>Juego de mesa: compra escenarios por todo el mundo y gana más que tus rivales.</span></button>
       <button class="game" id="go-sopa"><span class="ico">🔤</span><b>Sopa de letras</b><span>Busca palabras escondidas sobre Michael.</span></button>
     </div>
@@ -378,6 +407,27 @@ body.fixbubble .bubble{height:7.4em;overflow-y:auto}
     <p class="note" id="sNote">Desliza el dedo desde la primera letra hasta la última, o toca la primera y luego la última. Las palabras van hacia la derecha, hacia abajo o en diagonal.</p>
     <div class="medal" id="sMedal" hidden></div>
     <div class="row"><button class="btn" id="sAgain" hidden>Jugar otra vez</button></div>
+  </section>
+
+  <!-- RULETA DEL POP -->
+  <section class="view" id="v-wheel" hidden>
+    <div class="topbar"><button class="backbtn" id="b-wheel">← Volver</button><h2>Ruleta del Pop</h2></div>
+    <div class="wtop"><span class="wcat" id="wCat"></span><span id="wLives" aria-label="Vidas"></span></div>
+    <div class="wboard" id="wBoard" aria-live="polite"></div>
+    <div class="wtop"><span id="wBank"></span><span class="note" id="wHint"></span></div>
+    <div class="wplay">
+      <div class="wwheelbox"><canvas id="wWheel" aria-label="Ruleta"></canvas></div>
+      <div class="wkeys" id="wKeys">
+        <div class="row"><button class="btn" id="wSpin" type="button">🎡 Girar la ruleta</button><button class="btn ghost" id="wSolveBtn" type="button">💡 Resolver</button></div>
+        <div class="wsolve" id="wSolve" hidden><label class="note" for="wGuess" style="text-align:left">Escribe la respuesta completa:</label><div class="nrow"><input id="wGuess" maxlength="40" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn" id="wSolveOk" type="button">Comprobar</button></div><button class="linkbtn" id="wSolveNo" type="button">Cancelar</button></div>
+        <span class="note" style="text-align:left">Consonantes</span>
+        <div class="wrow" id="wCons"></div>
+        <span class="note" id="wVowInfo" style="text-align:left"></span>
+        <div class="wrow" id="wVows"></div>
+        <p class="note" id="wMsg" role="status" style="color:var(--spot);font-weight:800"></p>
+        <div class="row"><button class="btn" id="wAgain" type="button" hidden>Otro panel</button></div>
+      </div>
+    </div>
   </section>
 
   <!-- GIRA MUNDIAL -->
@@ -502,7 +552,7 @@ function say(text,then){
 }
 
 /* ================= NAVIGATION ================= */
-const VIEWS=["menu","quiz","rhythm","timeline","memory","puzzle","sopa","tour","login","ranking"];
+const VIEWS=["menu","quiz","rhythm","timeline","memory","puzzle","sopa","tour","wheel","login","ranking"];
 function show(v){syncHash(v);VIEWS.forEach(n=>$("v-"+n).hidden=n!==v);try{gMode()}catch(e){}document.body.classList.toggle("fixbubble",v==="sopa"||v==="puzzle");if(v!=="rhythm")stopRhythm();window.scrollTo({top:0,behavior:"smooth"})}
 function toMenuNow(){sayId++;hush();show("menu");say("¿A qué jugamos ahora? Elige otro juego.")}
 /* Back button + phone/browser back gesture both return to the menu */
@@ -516,7 +566,7 @@ window.addEventListener("popstate",onNav);window.addEventListener("hashchange",o
 try{if(location.hash)history.replaceState(null,"",location.pathname+location.search)}catch(e){}
 function toMenu(){if(curView!=="menu"&&location.hash==="#"+curView){try{history.back()}catch(e){}setTimeout(()=>{if(curView!=="menu")toMenuNow()},400)}else toMenuNow()}
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&curView!=="menu"&&!(e.target&&e.target.tagName==="INPUT"))toMenu()});
-["quiz","rhythm","timeline","memory","puzzle","sopa","tour"].forEach(n=>$("b-"+n).onclick=toMenu);
+["quiz","rhythm","timeline","memory","puzzle","sopa","tour","wheel"].forEach(n=>$("b-"+n).onclick=toMenu);
 $("go-sopa").onclick=()=>{SFX.intro();show("sopa");startSopa()};
 $("go-puzzle").onclick=()=>{SFX.intro();show("puzzle");puzzleGallery()};
 $("go-quiz").onclick=()=>{SFX.intro();show("quiz");startQuiz()};
@@ -1267,8 +1317,133 @@ document.addEventListener("fullscreenchange",()=>{$("gFull").textContent=documen
 $("gCont").onclick=()=>{$("gSetup").hidden=true;$("gPlay").hidden=false;gMode();$("gMsg").innerHTML=$("bubble").innerHTML;gBuild();$("gLog").innerHTML=G.log.map(x=>`<span>${x}</span>`).join("");G.paused=false;
   const p=G.players[G.turn];if(!G.busy&&p&&!p.bot&&["roll","decide","end"].includes(G.phase))gPanel();else if(!G.busy)gStartTurn();else gPanel()};
 
+/* ================= GAME 8: RULETA DEL POP (original wheel + letter-panel game) ================= */
+const WPH=[
+ {c:"Canción",p:"THRILLER"},{c:"Canción",p:"BILLIE JEAN"},{c:"Canción",p:"BEAT IT"},{c:"Canción",p:"BAD"},{c:"Canción",p:"SMOOTH CRIMINAL"},
+ {c:"Canción",p:"MAN IN THE MIRROR"},{c:"Canción",p:"BLACK OR WHITE"},{c:"Canción",p:"HEAL THE WORLD"},{c:"Canción",p:"ROCK WITH YOU"},
+ {c:"Canción",p:"BEN"},{c:"Canción",p:"I WANT YOU BACK"},{c:"Canción",p:"REMEMBER THE TIME"},{c:"Canción",p:"HUMAN NATURE"},
+ {c:"Canción",p:"DIRTY DIANA"},{c:"Canción",p:"WE ARE THE WORLD"},{c:"Canción",p:"THE WAY YOU MAKE ME FEEL"},
+ {c:"Disco",p:"OFF THE WALL"},{c:"Disco",p:"DANGEROUS"},{c:"Disco",p:"HISTORY"},{c:"Disco",p:"INVINCIBLE"},{c:"Disco",p:"GOT TO BE THERE"},
+ {c:"Cosa",p:"GUANTE DE LENTEJUELAS"},{c:"Cosa",p:"SOMBRERO NEGRO"},{c:"Cosa",p:"CALCETINES BLANCOS"},{c:"Cosa",p:"ZAPATOS BRILLANTES"},
+ {c:"Cosa",p:"CHAQUETA ROJA"},{c:"Cosa",p:"GAFAS DE SOL"},{c:"Cosa",p:"MICROFONO"},
+ {c:"Baile",p:"PASO LUNAR"},{c:"Baile",p:"MOONWALK"},{c:"Baile",p:"INCLINACION IMPOSIBLE"},{c:"Baile",p:"BAILE DE MONSTRUOS"},
+ {c:"Apodo",p:"EL REY DEL POP"},
+ {c:"Grupo",p:"LOS JACKSON CINCO"},
+ {c:"Persona",p:"QUINCY JONES"},{c:"Persona",p:"LIONEL RICHIE"},{c:"Persona",p:"EDDIE VAN HALEN"},
+ {c:"Lugar",p:"GARY INDIANA"},{c:"Lugar",p:"PASEO DE LA FAMA"},{c:"Lugar",p:"ESTUDIO DE GRABACION"},
+ {c:"Premio",p:"OCHO PREMIOS GRAMMY"},
+ {c:"Evento",p:"SUPER BOWL"},{c:"Evento",p:"GIRA MUNDIAL"},
+ {c:"Discográfica",p:"MOTOWN"},
+ {c:"Película",p:"THE WIZ"}
+];
+const WVOW="AEIOU".split(""),WCONS="BCDFGHJKLMNPQRSTVWXYZ".split("");
+const WHCOL=["#ff5e7e","#f5d36b","#7fe0ff","#9b7bff","#5fd39a","#ff8a3d","#ff9ecf","#3d7cff"];
+const W={lv:1,cfg:null,ph:null,shown:new Set(),used:new Set(),lives:3,bank:0,segs:[],angle:-Math.PI/2,state:"idle",value:0,over:false};
+function wcfg(lv){return{lives:Math.max(1,4-Math.floor((lv-1)/10)),bust:Math.min(4,1+Math.floor(lv/8)),reveal:lv<=2?2:lv<=5?1:0,vowel:100+lv*10,
+  maxLen:lv<=3?10:lv<=8?14:lv<=15?18:99,minLen:lv>=20?11:lv>=12?8:1}}
+function wSegs(cfg){const segs=[100,150,200,250,300,400,500,600,800,1000].map(v=>({t:"pts",v}));segs.push({t:"x2"},{t:"clue"});for(let i=0;i<cfg.bust;i++)segs.push({t:"bust"});
+  const s=shuffle(segs);for(let i=1;i<s.length;i++){if(s[i].t==="bust"&&s[i-1].t==="bust"){const j=(i+2)%s.length;[s[i],s[j]]=[s[j],s[i]]}}return s}
+function wLetters(){return new Set(W.ph.p.replace(/[^A-Z]/g,"").split(""))}
+function wHidden(){return [...wLetters()].filter(l=>!W.shown.has(l))}
+function wDrawWheel(){
+  const c=$("wWheel");if(!c)return;const css=c.clientWidth||300,d=Math.min(3,(window.devicePixelRatio||1)*(window.UIZ||1));
+  if(c.width!==Math.round(css*d)){c.width=Math.round(css*d);c.height=Math.round(css*d)}
+  const x=c.getContext("2d"),R=css/2,N=W.segs.length,a=2*Math.PI/N;x.setTransform(d,0,0,d,0,0);x.clearRect(0,0,css,css);
+  x.save();x.translate(R,R);
+  W.segs.forEach((s,i)=>{const a0=W.angle+i*a;x.beginPath();x.moveTo(0,0);x.arc(0,0,R-4,a0,a0+a);x.closePath();
+    x.fillStyle=s.t==="bust"?"#0c0a14":s.t==="x2"?"#f5d36b":s.t==="clue"?"#ffffff":WHCOL[i%WHCOL.length];x.fill();x.strokeStyle="#120f1c";x.lineWidth=2;x.stroke();
+    x.save();x.rotate(a0+a/2);x.textAlign="right";x.textBaseline="middle";x.fillStyle=s.t==="bust"?"#ff7a8a":"#120f1c";
+    x.font=`900 ${Math.max(10,R*.11)}px Nunito, system-ui, sans-serif`;x.fillText(s.t==="pts"?String(s.v):s.t==="x2"?"×2":s.t==="clue"?"PISTA":"CERO",R-14,0);x.restore()});
+  x.beginPath();x.arc(0,0,R*.16,0,2*Math.PI);x.fillStyle="#2a2440";x.fill();x.strokeStyle="#f5d36b";x.lineWidth=3;x.stroke();
+  x.fillStyle="#f5d36b";x.font=`900 ${R*.12}px Nunito, sans-serif`;x.textAlign="center";x.textBaseline="middle";x.fillText("MJ",0,1);
+  x.restore();
+  // pointer at the top
+  x.fillStyle="#f4f1fa";x.strokeStyle="#120f1c";x.lineWidth=2;x.beginPath();x.moveTo(R-R*.07,2);x.lineTo(R+R*.07,2);x.lineTo(R,R*.16);x.closePath();x.fill();x.stroke();
+}
+function wSegAtTop(){const N=W.segs.length,a=2*Math.PI/N;let r=(-Math.PI/2-W.angle)%(2*Math.PI);if(r<0)r+=2*Math.PI;return Math.floor(r/a)%N}
+function wRenderBoard(){
+  const words=W.ph.p.split(" ");
+  $("wBoard").innerHTML=words.map(w=>`<span class="wword">${w.split("").map(ch=>`<span class="wtile${W.shown.has(ch)?" on":""}">${W.shown.has(ch)?ch:""}</span>`).join("")}</span>`).join("");
+  $("wCat").textContent="Pista: "+W.ph.c;
+  $("wLives").textContent="❤️".repeat(Math.max(0,W.lives))+"🖤".repeat(Math.max(0,W.cfg.lives-W.lives));
+  $("wBank").textContent=W.bank.toLocaleString("es-ES")+" puntos en este panel";
+}
+function wRenderKeys(){
+  const st=W.state,mk=(l,vow)=>{const used=W.used.has(l);const can=!W.over&&!used&&(vow?st==="spin"&&W.bank>=W.cfg.vowel:st==="cons");
+    return `<button class="wkey${vow?" vow":""}${used?(W.shown.has(l)?" hit":" miss"):""}" id="wk-${l}" type="button"${can?"":" disabled"} data-l="${l}">${l}</button>`};
+  $("wCons").innerHTML=WCONS.map(l=>mk(l,false)).join("");
+  $("wVows").innerHTML=WVOW.map(l=>mk(l,true)).join("");
+  $("wSpin").disabled=W.over||st!=="spin";
+  $("wSolveBtn").disabled=W.over||st!=="spin";
+  $("wVowInfo").textContent=`Vocales: ${W.cfg.vowel} puntos cada una`;
+  $("wAgain").hidden=!W.over;
+  $("wHint").textContent=W.over?"":st==="spin"?"Gira la ruleta, compra una vocal o resuelve el panel.":st==="cons"?`Por cada vez que salga la consonante ganas ${W.value} puntos.`:"La ruleta está girando…";
+}
+function wRender(){wRenderBoard();wRenderKeys();wDrawWheel()}
+function startWheel(){
+  W.lv=lvCurrent("wheel");renderLv("wheel",W.lv,startWheel);W.cfg=wcfg(W.lv);
+  const len=o=>o.p.length;let pool=WPH.filter(o=>len(o)<=W.cfg.maxLen&&len(o)>=W.cfg.minLen);if(pool.length<5)pool=WPH.filter(o=>len(o)<=W.cfg.maxLen);if(!pool.length)pool=WPH;
+  W.ph=rnd(pool);W.shown=new Set();W.used=new Set();W.lives=W.cfg.lives;W.bank=0;W.over=false;W.state="spin";W.segs=wSegs(W.cfg);W.angle=-Math.PI/2;
+  const cons=shuffle([...wLetters()].filter(l=>!WVOW.includes(l)));cons.slice(0,W.cfg.reveal).forEach(l=>{W.shown.add(l);W.used.add(l)});
+  beginRun("wheel");$("wSolve").hidden=true;$("wMsg").textContent="";wRender();
+  say(`¡Ruleta del Pop, nivel ${W.lv}! La pista es: <strong>${W.ph.c}</strong>. Gira la ruleta para empezar.`);
+}
+function wTick(){if(!soundOn||!A())return;tone(1400,ac.currentTime,.025,"square",.05)}
+function wSpin(){
+  if(W.state!=="spin"||W.over)return;W.state="spinning";wRenderKeys();
+  const N=W.segs.length,a=2*Math.PI/N,t=Math.floor(Math.random()*N);
+  let target=-Math.PI/2-(t+.5)*a+(Math.random()-.5)*a*.6;while(target<W.angle+8*Math.PI)target+=2*Math.PI;
+  const from=W.angle,dur=reduce?300:3200+Math.random()*800,t0=performance.now();let last=wSegAtTop();
+  const step=now=>{const k=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-k,4);W.angle=from+(target-from)*e;const s=wSegAtTop();if(s!==last){last=s;wTick()}wDrawWheel();
+    if(k<1)requestAnimationFrame(step);else{W.angle=target%(2*Math.PI);wLanded(W.segs[wSegAtTop()])}};
+  requestAnimationFrame(step);
+}
+function wLanded(s){
+  if(s.t==="pts"){W.value=s.v;W.state="cons";wRender();say(`¡${s.v} puntos! Elige una consonante.`);return}
+  W.state="spin";
+  if(s.t==="x2"){W.bank*=2;SFX.sparkle();say(W.bank?`¡Doble! Ahora tienes ${W.bank} puntos en este panel.`:"¡Doble! Pero todavía no tenías puntos. Vuelve a girar.")}
+  else if(s.t==="clue"){const h=wHidden();if(h.length){const l=rnd(h);W.shown.add(l);W.used.add(l);SFX.sparkle();say(`¡Pista! Se descubre la letra <strong>${l}</strong>.`)}else say("¡Pista! Pero ya están todas las letras a la vista.")}
+  else{W.bank=0;SFX.bad();say("¡Oh, no! Cero: pierdes los puntos de este panel. Vuelve a girar.")}
+  wRender();wCheckAll();
+}
+function wPick(l){
+  if(W.over||W.used.has(l))return;const vow=WVOW.includes(l);
+  if(vow){if(W.state!=="spin"||W.bank<W.cfg.vowel)return;W.bank-=W.cfg.vowel}else if(W.state!=="cons")return;
+  W.used.add(l);const n=W.ph.p.split("").filter(ch=>ch===l).length;
+  if(n){W.shown.add(l);if(!vow){W.bank+=n*W.value}SFX.ok();say(`¡Sí! Hay ${n===1?"una":n} <strong>${l}</strong>.${vow?"":` Ganas ${n*W.value} puntos.`}`)}
+  else if(vow){SFX.bad();say(`No hay ninguna <strong>${l}</strong>.`)}
+  else{W.lives--;SFX.bad();say(`No hay ninguna <strong>${l}</strong>. Pierdes una vida.`)}
+  W.state="spin";wRender();if(W.lives<=0){wLose();return}wCheckAll();
+}
+function wNorm(t){return String(t).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().replace(/[^A-Z]/g,"")}
+function wTrySolve(){
+  const g=$("wGuess").value;if(!wNorm(g)){$("wMsg").textContent="Escribe la respuesta completa.";return}
+  $("wSolve").hidden=true;$("wGuess").value="";
+  if(wNorm(g)===wNorm(W.ph.p)){wWin();return}
+  W.lives--;SFX.bad();say("¡No es eso! Pierdes una vida.");wRender();if(W.lives<=0)wLose();
+}
+function wCheckAll(){if(!W.over&&wHidden().length===0)wWin()}
+function wWin(){
+  W.over=true;W.state="over";[...wLetters()].forEach(l=>W.shown.add(l));
+  const pts=Math.max(W.bank,50)+W.lv*20;addPoints("wheel",pts);
+  const up=W.lv<LVMAX;finishRun("wheel",W.lv>=10?"Rey de la ruleta":null);lvUp("wheel",W.lv);renderLv("wheel",lvCurrent("wheel"),startWheel);
+  SFX.applause();wRender();$("wMsg").textContent=`¡Panel resuelto! Ganas ${pts} puntos.`;
+  say(`¡Correcto! Era <strong>${W.ph.p}</strong>. Ganas ${pts} puntos.${up?` ¡Has desbloqueado el nivel ${W.lv+1}!`:""}`);
+}
+function wLose(){
+  W.over=true;W.state="over";[...wLetters()].forEach(l=>W.shown.add(l));finishRun("wheel",null);SFX.bad();wRender();
+  $("wMsg").textContent="Te has quedado sin vidas.";say(`¡Oh! Te has quedado sin vidas. La respuesta era <strong>${W.ph.p}</strong>. ¡Prueba otra vez!`);
+}
+$("wSpin").onclick=()=>{A();wSpin()};
+$("wKeys").addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-l]");if(b&&!b.disabled)wPick(b.dataset.l)});
+$("wSolveBtn").onclick=()=>{if(W.state!=="spin"||W.over)return;$("wSolve").hidden=false;$("wMsg").textContent="";$("wGuess").focus()};
+$("wSolveOk").onclick=wTrySolve;$("wGuess").addEventListener("keydown",e=>{if(e.key==="Enter")wTrySolve()});
+$("wSolveNo").onclick=()=>{$("wSolve").hidden=true};
+$("wAgain").onclick=()=>{SFX.intro();startWheel()};
+window.addEventListener("resize",()=>{if(!$("v-wheel").hidden)wDrawWheel()});
+
 /* ================= NEW VERSION NOTICE (website only) ================= */
-const APP_VERSION="20261103-172557";
+const APP_VERSION="20261103-173030";
 (function(){
   if(APP_VERSION.startsWith("__")||!/^https?:$/.test(location.protocol))return;
   let latest=null,snoozeUntil=0;
@@ -1282,8 +1457,8 @@ const APP_VERSION="20261103-172557";
 })();
 
 /* ================= PLAYERS, POINTS & MEDALS ================= */
-const GAMES={quiz:"El gran quiz",rhythm:"Moonwalk al ritmo",timeline:"Línea del tiempo",memory:"Parejas brillantes",puzzle:"Puzles",sopa:"Sopa de letras",tour:"Gira mundial"};
-const START={quiz:startQuiz,rhythm:rhythmIntro,timeline:startTimeline,memory:startMemory,puzzle:puzzleGallery,sopa:startSopa,tour:startTourMenu};
+const GAMES={quiz:"El gran quiz",rhythm:"Moonwalk al ritmo",timeline:"Línea del tiempo",memory:"Parejas brillantes",puzzle:"Puzles",sopa:"Sopa de letras",tour:"Gira mundial",wheel:"Ruleta del Pop"};
+const START={quiz:startQuiz,rhythm:rhythmIntro,timeline:startTimeline,memory:startMemory,puzzle:puzzleGallery,sopa:startSopa,tour:startTourMenu,wheel:startWheel};
 const LS="destello-players-v1";
 const Store={db:null,players:{},writing:{},dirty:{}};
 const RUN={};let ME=null,lastMe=null,pendingGame=null;
@@ -1479,7 +1654,7 @@ WORDS.push(
  {w:"SUPERBOWL",label:"SUPER BOWL",f:"En 1993 actuó en el descanso de la Super Bowl."},
  {w:"WIZ",label:"WIZ",f:"En The Wiz hizo de Espantapájaros."}
 );
-["quiz","rhythm","timeline","memory","puzzle","tour"].forEach(g=>{const pb=$("pts-"+g);if(pb){const d=document.createElement("div");d.className="row seg lvls";d.id="lv-"+g;pb.after(d)}});
+["quiz","rhythm","timeline","memory","puzzle","tour","wheel"].forEach(g=>{const pb=$("pts-"+g);if(pb){const d=document.createElement("div");d.className="row seg lvls";d.id="lv-"+g;pb.after(d)}});
 
 /* ================= DESTELLO (sequined microphone) ================= */
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;

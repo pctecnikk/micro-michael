@@ -8,6 +8,7 @@ Juegos de fans sobre Michael Jackson para jugar en el móvil o el ordenador, pre
 - **Parejas brillantes**: juego de memoria con curiosidades.
 - **Puzles**: nueve dibujos originales, de 3×3 a 5×5.
 - **Sopa de letras**: palabras al revés, en diagonal y letras trampa.
+- **Ruleta del Pop**: gira la ruleta, adivina letras y resuelve paneles con títulos y curiosidades.
 - **Gira mundial**: juego de mesa original. Compra escenarios por ciudades de todo el mundo y gana a los rivales del ordenador.
 
 Cada juego tiene 50 niveles que se desbloquean jugando. Hay puntos, récords y medallas por jugador, y una copia de seguridad del progreso.
