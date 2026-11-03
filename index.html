@@ -94,6 +94,38 @@ button:focus-visible{outline:3px solid var(--spot);outline-offset:2px}
 .tap{width:100%;font:inherit;font-family:var(--display);font-size:22px;padding:22px;border-radius:18px;border:0;background:var(--spot);color:#1a1405;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 .tap:active{transform:scale(.98)}
 .tap:disabled{opacity:.4;cursor:default}
+/* gira mundial */
+.gboard{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:repeat(7,minmax(0,1fr));gap:2px;width:100%;max-width:520px;aspect-ratio:1;margin:0 auto}
+.gsq{position:relative;background:var(--stage-2);border:1px solid var(--line);border-radius:4px;overflow:hidden;display:flex;flex-direction:column;align-items:center;font-size:clamp(7px,2.1vw,11px);line-height:1.1;text-align:center;padding:0 1px 1px;cursor:pointer;min-width:0;min-height:0;color:var(--ink)}
+.gsq.corner{background:#2a2240}
+.gsq.owned{box-shadow:inset 0 0 0 2px var(--own)}
+.gsq.sel{outline:2px solid var(--spot);outline-offset:-2px}
+.gsq .band{width:calc(100% + 2px);height:16%;flex:0 0 auto;margin:0 -1px}
+.gsq .nm{font-weight:800;overflow-wrap:anywhere;margin-top:1px}
+.gsq .pr{color:var(--muted);font-variant-numeric:tabular-nums}
+.gsq .ic{font-size:1.7em;line-height:1.2}
+.gsq .stars{color:var(--spot);font-size:.9em;line-height:1}
+.gsq .toks{position:absolute;bottom:1px;left:1px;right:1px;display:flex;gap:1px;flex-wrap:wrap;justify-content:center}
+.tok{display:inline-block;width:clamp(8px,2.4vw,13px);height:clamp(8px,2.4vw,13px);border-radius:50%;border:1.5px solid #120f1c;flex:0 0 auto}
+.gcenter{grid-column:2/7;grid-row:2/7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;min-width:0}
+.gtitle{font-family:var(--display);color:var(--spot);font-size:clamp(13px,4vw,22px)}
+.dice{display:flex;gap:10px}
+.die{width:clamp(34px,10vw,54px);aspect-ratio:1;background:#f4f1fa;color:#120f1c;border-radius:10px;display:grid;place-items:center;font-family:var(--display);font-size:clamp(18px,5vw,28px)}
+.gturn{font-weight:900;font-size:clamp(12px,3.4vw,16px)}
+.gplayers{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.gp{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:2px solid var(--line);font-weight:800;font-size:13px;font-variant-numeric:tabular-nums}
+.gp.now{border-color:var(--spot)}
+.gp.out{opacity:.45;text-decoration:line-through}
+.gpanel{background:var(--stage-2);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.gpanel .row{justify-content:flex-start}
+.ginfo{line-height:1.5;font-size:15px}
+.chip{display:inline-block;border:1px solid;border-radius:999px;padding:0 8px;font-size:12px;font-weight:800}
+.glog{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.glog span:first-child{color:var(--ink)}
+.rules{margin:0;padding-left:20px;line-height:1.5;color:var(--muted)}
+/* new version banner */
+.update{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;background:var(--spot);color:#1a1405;font-weight:800;padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.update button{font:inherit;font-weight:900;border:0;border-radius:999px;padding:10px 18px;background:#1a1405;color:var(--spot);cursor:pointer}
 /* players & points */
 .who{display:flex;justify-content:center;align-items:center;gap:6px;font-size:14px;color:var(--muted);flex-wrap:wrap;font-variant-numeric:tabular-nums}
 .who b{color:var(--ink)}
@@ -184,6 +216,7 @@ body.fixbubble .bubble{height:7.4em;overflow-y:auto}
       <button class="game" id="go-timeline"><span class="ico">📅</span><b>Línea del tiempo</b><span>Ordena lo que pasó primero y lo que vino después.</span></button>
       <button class="game" id="go-memory"><span class="ico">🧤</span><b>Parejas brillantes</b><span>Encuentra las parejas y descubre curiosidades.</span></button>
       <button class="game" id="go-puzzle"><span class="ico">🧩</span><b>Puzles</b><span>Nueve dibujos para montar, en fácil o difícil.</span></button>
+      <button class="game wide" id="go-tour"><span class="ico">🌍</span><b>Gira mundial</b><span>Juego de mesa: compra escenarios por todo el mundo y gana más que tus rivales.</span></button>
       <button class="game" id="go-sopa"><span class="ico">🔤</span><b>Sopa de letras</b><span>Busca palabras escondidas sobre Michael.</span></button>
     </div>
     <div class="row"><button class="btn" id="go-ranking">🏆 Puntos y medallas</button></div>
@@ -255,6 +288,29 @@ body.fixbubble .bubble{height:7.4em;overflow-y:auto}
     <div class="row"><button class="btn" id="sAgain" hidden>Jugar otra vez</button></div>
   </section>
 
+  <!-- GIRA MUNDIAL -->
+  <section class="view" id="v-tour" hidden>
+    <div class="topbar"><button class="backbtn" id="b-tour">← Volver</button><h2>Gira mundial</h2></div>
+    <div id="gSetup" class="view">
+      <p class="q">Recorre el mundo con tu gira, compra escenarios en las ciudades y cobra a tus rivales cuando actúen en ellas.</p>
+      <ul class="rules">
+        <li>Tira los dados y avanza por el tablero.</li>
+        <li>Si caes en una ciudad libre, puedes comprarla.</li>
+        <li>Si cae un rival en tu ciudad, te paga. Con todas las ciudades de un color cobras el doble y puedes poner estrellas.</li>
+        <li>Cada vez que pasas por el Estudio cobras 200 €.</li>
+        <li>Gana quien tenga más dinero y ciudades al acabar las rondas, o quien quede solo en la gira.</li>
+      </ul>
+      <p class="note" id="gSetupInfo" style="text-align:left"></p>
+      <div class="row"><button class="btn" id="gStart">🎲 Empezar la gira</button><button class="btn ghost" id="gCont" hidden>Continuar la partida</button></div>
+    </div>
+    <div id="gPlay" class="view" hidden>
+      <div class="gplayers" id="gPlayers"></div>
+      <div class="gboard" id="gBoard"></div>
+      <div class="gpanel"><div class="row" id="gAct"></div><div class="ginfo" id="gInfo"></div></div>
+      <div class="glog" id="gLog" aria-live="polite"></div>
+    </div>
+  </section>
+
   <!-- LOGIN -->
   <section class="view" id="v-login" hidden>
     <div class="topbar"><button class="backbtn" id="b-login">← Volver</button></div>
@@ -288,6 +344,8 @@ body.fixbubble .bubble{height:7.4em;overflow-y:auto}
   <p class="note">Juego de fans no oficial. No está afiliado a Michael Jackson, a sus herederos ni a sus discográficas.</p>
   <p class="note" id="voicehint" hidden style="color:var(--spot)">Este dispositivo no ha reproducido la voz de Michael, el micrófono. Prueba a quitar el modo silencio, subir el volumen o abrir este enlace en Safari o Chrome. Mientras tanto, puedes jugar leyendo.</p>
 </div>
+
+<div class="update" id="upd" hidden role="status"><span>✨ Hay una versión nueva del juego. Tu progreso no se pierde.</span><button id="updGo" type="button">Actualizar</button><button id="updLater" type="button">Luego</button></div>
 
 <script>
 const $=id=>document.getElementById(id);
@@ -350,7 +408,7 @@ function say(text,then){
 }
 
 /* ================= NAVIGATION ================= */
-const VIEWS=["menu","quiz","rhythm","timeline","memory","puzzle","sopa","login","ranking"];
+const VIEWS=["menu","quiz","rhythm","timeline","memory","puzzle","sopa","tour","login","ranking"];
 function show(v){syncHash(v);VIEWS.forEach(n=>$("v-"+n).hidden=n!==v);document.body.classList.toggle("fixbubble",v==="sopa"||v==="puzzle");if(v!=="rhythm")stopRhythm();window.scrollTo({top:0,behavior:"smooth"})}
 function toMenuNow(){sayId++;hush();show("menu");say("¿A qué jugamos ahora? Elige otro juego.")}
 /* Back button + phone/browser back gesture both return to the menu */
@@ -364,7 +422,7 @@ window.addEventListener("popstate",onNav);window.addEventListener("hashchange",o
 try{if(location.hash)history.replaceState(null,"",location.pathname+location.search)}catch(e){}
 function toMenu(){if(curView!=="menu"&&location.hash==="#"+curView){try{history.back()}catch(e){}setTimeout(()=>{if(curView!=="menu")toMenuNow()},400)}else toMenuNow()}
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&curView!=="menu"&&!(e.target&&e.target.tagName==="INPUT"))toMenu()});
-["quiz","rhythm","timeline","memory","puzzle","sopa"].forEach(n=>$("b-"+n).onclick=toMenu);
+["quiz","rhythm","timeline","memory","puzzle","sopa","tour"].forEach(n=>$("b-"+n).onclick=toMenu);
 $("go-sopa").onclick=()=>{SFX.intro();show("sopa");startSopa()};
 $("go-puzzle").onclick=()=>{SFX.intro();show("puzzle");puzzleGallery()};
 $("go-quiz").onclick=()=>{SFX.intro();show("quiz");startQuiz()};
@@ -922,9 +980,205 @@ function endSopaOld(){
 }
 $("sAgain").onclick=()=>{SFX.intro();startSopa()};
 
+/* ================= GAME 7: GIRA MUNDIAL (original property board game) ================= */
+const GGROUPS={j5:{n:"Jackson 5",c:"#c98a4b"},otw:{n:"Off the Wall",c:"#ff8a3d"},thr:{n:"Thriller",c:"#e5484d"},bad:{n:"Bad",c:"#3d7cff"},dan:{n:"Dangerous",c:"#9b59ff"}};
+const GSQ=[
+ {t:"start",n:"Estudio",ic:"🎙️",d:"Cada vez que pasas por aquí cobras 200 € de royalties."},
+ {t:"city",n:"Gary",g:"j5",p:60},
+ {t:"card",n:"Tarjeta de fan",ic:"🎟️"},
+ {t:"city",n:"Detroit",g:"j5",p:60},
+ {t:"tax",n:"Gastos de gira",ic:"💸",a:100},
+ {t:"city",n:"Los Ángeles",g:"j5",p:80},
+ {t:"rest",n:"Camerino",ic:"🛋️",d:"Descansas un rato. No pasa nada."},
+ {t:"city",n:"México",g:"otw",p:100},
+ {t:"city",n:"Buenos Aires",g:"otw",p:100},
+ {t:"card",n:"Tarjeta de fan",ic:"🎟️"},
+ {t:"city",n:"São Paulo",g:"otw",p:120},
+ {t:"city",n:"Toronto",g:"thr",p:140},
+ {t:"bonus",n:"Autógrafos",ic:"✍️",a:100,d:"Firmas autógrafos a tus fans y cobras 100 €."},
+ {t:"city",n:"Londres",g:"thr",p:140},
+ {t:"card",n:"Tarjeta de fan",ic:"🎟️"},
+ {t:"city",n:"París",g:"thr",p:160},
+ {t:"city",n:"Roma",g:"bad",p:180},
+ {t:"city",n:"Madrid",g:"bad",p:180},
+ {t:"skip",n:"Ensayo extra",ic:"⏸️",d:"Te quedas ensayando y pierdes el próximo turno."},
+ {t:"city",n:"Ámsterdam",g:"bad",p:200},
+ {t:"tax",n:"Gastos de gira",ic:"💸",a:150},
+ {t:"city",n:"Sídney",g:"dan",p:220},
+ {t:"city",n:"Tokio",g:"dan",p:240},
+ {t:"city",n:"Nueva York",g:"dan",p:260}
+];
+const GCARDS=[
+ {t:"Tu disco bate récords de ventas. Cobras 150 € de royalties.",m:150},
+ {t:"Se te descose el guante de lentejuelas. Pagas 50 € por arreglarlo.",m:-50},
+ {t:"Tu moonwalk en televisión deja a todos con la boca abierta. Cobras 100 €.",m:100},
+ {t:"Llueve en el concierto al aire libre. Pagas 80 € en lonas.",m:-80},
+ {t:"¡Te vas de gira a Tokio! Avanza hasta Tokio.",go:22},
+ {t:"Vuelves al Estudio a grabar. Avanza hasta el Estudio y cobra 200 €.",go:0},
+ {t:"Tus fans te mandan regalos. Cada rival te da 20 €.",each:20},
+ {t:"Ensayo sorpresa. Retrocede 3 casillas.",back:3},
+ {t:"Ganas un premio a la mejor canción. Cobras 120 €.",m:120},
+ {t:"Pagas el vestuario del nuevo videoclip: 60 €.",m:-60},
+ {t:"Invitas a merendar después del ensayo. Das 15 € a cada rival.",each:-15},
+ {t:"Tu canción suena en todas las radios. Cobras 90 €.",m:90}
+];
+const GBOTS=[{name:"Sombrero",ic:"🎩",c:"#7fe0ff"},{name:"Guante",ic:"🧤",c:"#ff9ecf"},{name:"Bailarín",ic:"🕺",c:"#5fd39a"}];
+const G={players:[],own:{},stars:{},turn:0,round:1,maxRounds:20,busy:false,lv:1,deck:[],log:[],sel:null,phase:"idle",over:false,paused:false};
+function gpos(i){if(i<=6)return[7,7-i];if(i<=12)return[7-(i-6),1];if(i<=18)return[1,1+(i-12)];return[1+(i-18),7]}
+function gBots(lv){return lv<8?1:lv<20?2:3}
+function gUp(i){return Math.round(GSQ[i].p*.5)}
+function gBase(i){return Math.max(4,Math.round(GSQ[i].p*.12))}
+function gGroup(g){return GSQ.map((s,i)=>s.g===g?i:-1).filter(i=>i>=0)}
+function gFull(pi,g){return gGroup(g).every(i=>G.own[i]===pi)}
+function gRent(i){const o=G.own[i];if(o===undefined)return 0;const st=G.stars[i]||0;return gBase(i)*[1,3,6,10][st]*(st===0&&gFull(o,GSQ[i].g)?2:1)}
+function gMoney(n){return Math.round(n).toLocaleString("es-ES")+" €"}
+function gReserve(){return Math.max(40,260-G.lv*5)}
+function gIsHere(){return !$("v-tour").hidden&&!$("gPlay").hidden}
+function glog(t){G.log.unshift(t);G.log=G.log.slice(0,6);const el=$("gLog");if(el)el.innerHTML=G.log.map(x=>`<span>${x}</span>`).join("")}
+function gNote(t){$("bubble").innerHTML=t}
+function gBuild(){
+  const b=$("gBoard");b.innerHTML="";
+  GSQ.forEach((s,i)=>{const d=document.createElement("div");d.className="gsq"+(i%6===0?" corner":"");d.id="gs"+i;const [r,c]=gpos(i);d.style.gridRow=r;d.style.gridColumn=c;d.setAttribute("role","button");d.tabIndex=0;d.setAttribute("aria-label",s.n);
+    d.innerHTML=(s.t==="city"?`<span class="band" style="background:${GGROUPS[s.g].c}"></span><span class="nm">${s.n}</span><span class="pr" id="gpr${i}"></span>`:`<span class="ic">${s.ic}</span><span class="nm">${s.n}</span>`)+`<span class="stars" id="gst${i}"></span><span class="toks" id="gtk${i}"></span>`;
+    d.onclick=()=>{G.sel=i;gPanel()};d.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();G.sel=i;gPanel()}};b.appendChild(d)});
+  const c=document.createElement("div");c.className="gcenter";
+  c.innerHTML=`<div class="gtitle">GIRA MUNDIAL</div><div class="dice"><div class="die" id="gd1">·</div><div class="die" id="gd2">·</div></div><div class="gturn" id="gTurn"></div><div class="note" id="gRound"></div>`;
+  b.appendChild(c);
+}
+function gUpdate(){
+  if(!$("gs0"))return;
+  GSQ.forEach((s,i)=>{const d=$("gs"+i),o=G.own[i];d.classList.toggle("owned",o!==undefined);d.style.setProperty("--own",o!==undefined?G.players[o].c:"transparent");d.classList.toggle("sel",G.sel===i);
+    if(s.t==="city"){$("gpr"+i).textContent=o!==undefined?gRent(i)+"€":s.p+"€";$("gst"+i).textContent="★".repeat(G.stars[i]||0)}
+    $("gtk"+i).innerHTML=G.players.map(p=>!p.out&&p.pos===i?`<span class="tok" style="background:${p.c}"></span>`:"").join("")});
+  $("gPlayers").innerHTML=G.players.map((p,k)=>`<span class="gp${k===G.turn&&!G.over?" now":""}${p.out?" out":""}"><span class="tok" style="background:${p.c}"></span>${p.ic} ${esc(p.name)} · ${gMoney(p.money)}</span>`).join("");
+  $("gRound").textContent=`Ronda ${Math.min(G.round,G.maxRounds)} de ${G.maxRounds}`;
+  const p=G.players[G.turn];$("gTurn").textContent=G.over?"Gira terminada":p?"Turno: "+p.name:"";
+}
+function gCanUpgrade(i){const p=G.players[G.turn],s=GSQ[i];return !!(s&&s.t==="city"&&!G.over&&p&&!p.bot&&!G.busy&&(G.phase==="roll"||G.phase==="end")&&G.own[i]===G.turn&&gFull(G.turn,s.g)&&(G.stars[i]||0)<3&&p.money>=gUp(i))}
+function gPanel(){
+  gUpdate();
+  const act=$("gAct"),info=$("gInfo"),i=G.sel;
+  if(i==null){info.innerHTML=G.over?info.innerHTML:`<span class="note" style="text-align:left">Toca cualquier casilla del tablero para ver qué es. Si tienes todas las ciudades de un color, podrás mejorarlas con estrellas para cobrar más.</span>`}
+  else{const s=GSQ[i];let h=`<b>${s.n}</b>`;
+    if(s.t==="city"){const o=G.own[i];
+      h+=` <span class="chip" style="border-color:${GGROUPS[s.g].c};color:${GGROUPS[s.g].c}">${GGROUPS[s.g].n}</span><br>Precio: ${gMoney(s.p)} · Alquiler: ${gMoney(gBase(i))}, el doble con el grupo completo<br>Cada estrella cuesta ${gMoney(gUp(i))} (máximo 3)`;
+      h+=o===undefined?"<br>Todavía no tiene dueño.":`<br>Dueño: ${esc(G.players[o].name)} · ${"★".repeat(G.stars[i]||0)||"sin estrellas"} · cobra ${gMoney(gRent(i))}`;
+      if(gCanUpgrade(i))h+=`<div class="row" style="justify-content:flex-start;margin-top:8px"><button class="btn ghost" id="gUpBtn">⭐ Añadir estrella (${gMoney(gUp(i))})</button></div>`}
+    else h+="<br>"+(s.d||(s.t==="card"?"Coges una tarjeta de fan con una sorpresa.":s.t==="tax"?`Pagas ${gMoney(s.a)}.`:""));
+    info.innerHTML=h;const ub=$("gUpBtn");if(ub)ub.onclick=()=>gUpgrade(i)}
+  act.innerHTML="";const p=G.players[G.turn];
+  if(G.over){act.innerHTML=`<button class="btn" id="gAgain">Otra gira</button>`;$("gAgain").onclick=()=>{SFX.intro();startTourMenu()};return}
+  if(!p||p.bot||G.busy){act.innerHTML=`<span class="note">${p&&p.bot?"Juega "+esc(p.name)+"…":"…"}</span>`;return}
+  if(G.phase==="roll"){act.innerHTML=`<button class="btn" id="gRoll">🎲 Tirar dados</button>`;$("gRoll").onclick=()=>gRoll()}
+  else if(G.phase==="decide"){const k=p.pos,s=GSQ[k];
+    act.innerHTML=`<button class="btn" id="gBuy"${p.money<s.p?" disabled":""}>Comprar ${s.n} (${gMoney(s.p)})</button><button class="btn ghost" id="gPass">No comprar</button>`;
+    $("gBuy").onclick=()=>{gBuy(G.turn,k);G.phase="end";gPanel()};$("gPass").onclick=()=>{G.phase="end";gPanel()}}
+  else if(G.phase==="end"){act.innerHTML=`<button class="btn" id="gEnd">Terminar turno ▶</button>`;$("gEnd").onclick=()=>gEndTurn()}
+}
+function gUpgrade(i){if(!gCanUpgrade(i))return;const p=G.players[G.turn];p.money-=gUp(i);G.stars[i]=(G.stars[i]||0)+1;SFX.sparkle();glog(`${esc(p.name)} pone ${G.stars[i]} ★ en ${GSQ[i].n}`);gPanel()}
+function gBuy(pi,k){const p=G.players[pi],s=GSQ[k];if(p.money<s.p||G.own[k]!==undefined)return;p.money-=s.p;G.own[k]=pi;if(!p.bot)SFX.ok();glog(`${esc(p.name)} compra ${s.n}`);if(gFull(pi,s.g))glog(`¡${esc(p.name)} tiene todo el grupo ${GGROUPS[s.g].n}!`);gUpdate()}
+function gPay(from,to,amt){const p=G.players[from];p.money-=amt;if(to!=null&&G.players[to])G.players[to].money+=amt;if(!p.bot)SFX.bad();if(p.money<0)gRaise(from)}
+function gRaise(pi){const p=G.players[pi],mine=Object.keys(G.own).filter(k=>G.own[k]===pi).map(Number);
+  for(const k of mine){while(p.money<0&&(G.stars[k]||0)>0){G.stars[k]--;p.money+=Math.round(gUp(k)/2)}}
+  if(p.money<0)for(const k of mine){if(p.money>=0)break;delete G.own[k];delete G.stars[k];p.money+=Math.round(GSQ[k].p/2);glog(`${esc(p.name)} vende ${GSQ[k].n} para pagar`)}
+  if(p.money<0){p.out=true;p.money=0;mine.forEach(k=>{if(G.own[k]===pi){delete G.own[k];delete G.stars[k]}});glog(`💥 ${esc(p.name)} se queda sin dinero y deja la gira`)}
+  gUpdate()}
+function gDiceTick(){if(!soundOn||!A())return;noise(ac.currentTime,.03,"bandpass",3000,1,.15)}
+function gRoll(){
+  if(G.busy||G.over)return;G.busy=true;const pi=G.turn;$("gAct").innerHTML="";let n=0;
+  const tm=setInterval(()=>{$("gd1").textContent=1+Math.floor(Math.random()*6);$("gd2").textContent=1+Math.floor(Math.random()*6);gDiceTick();
+    if(++n>=7){clearInterval(tm);const a=1+Math.floor(Math.random()*6),b=1+Math.floor(Math.random()*6);$("gd1").textContent=a;$("gd2").textContent=b;
+      glog(`${esc(G.players[pi].name)} saca ${a} + ${b}`);gMove(pi,a+b,()=>{G.busy=false;gLand(pi)})}},80);
+}
+function gMove(pi,steps,done){const p=G.players[pi],dir=steps<0?-1:1,n=Math.abs(steps);let k=0;
+  const step=()=>{if(k>=n){done();return}p.pos=(p.pos+dir+24)%24;
+    if(dir>0&&p.pos===0){p.money+=200;glog(`${esc(p.name)} pasa por el Estudio y cobra 200 €`);if(!p.bot)SFX.sparkle()}
+    k++;if(!p.bot)SFX.flip();gUpdate();setTimeout(step,gIsHere()?150:0)};
+  step()}
+function gLand(pi){
+  const p=G.players[pi],s=GSQ[p.pos];G.sel=p.pos;
+  const after=()=>{gUpdate();if(p.out){setTimeout(gEndTurn,600);return}if(p.bot){gBotUpgrade(pi);setTimeout(gEndTurn,gIsHere()?800:0)}else{G.phase="end";gPanel()}};
+  if(s.t==="city"){const o=G.own[p.pos];
+    if(o===undefined){
+      if(p.bot){if(p.money-s.p>=gReserve())gBuy(pi,p.pos);after()}
+      else{G.phase="decide";gPanel();gNote(`Has llegado a <strong>${s.n}</strong>. ¿La compras por ${gMoney(s.p)}?`)}
+      return}
+    if(o!==pi&&!G.players[o].out){const r=gRent(p.pos);glog(`${esc(p.name)} paga ${gMoney(r)} a ${esc(G.players[o].name)} por actuar en ${s.n}`);if(!p.bot)gNote(`Has caído en <strong>${s.n}</strong>, de ${esc(G.players[o].name)}. Pagas ${gMoney(r)}.`);gPay(pi,o,r)}
+    else if(o===pi&&!p.bot)gNote(`Estás en <strong>${s.n}</strong>, tu propia ciudad. ¡A descansar!`);
+    after();return}
+  if(s.t==="card"){const c=G.deck.shift();G.deck.push(c);glog(`🎟️ ${esc(p.name)}: ${c.t}`);gNote(`🎟️ <strong>${esc(p.name)}</strong>: ${c.t}`);
+    if(c.m){if(c.m>0){p.money+=c.m;if(!p.bot)SFX.ok()}else gPay(pi,null,-c.m)}
+    if(c.each){G.players.forEach((q,k)=>{if(k!==pi&&!q.out&&!p.out){if(c.each>0)gPay(k,pi,c.each);else gPay(pi,k,-c.each)}})}
+    if(c.go!==undefined&&!p.out){const steps=(c.go-p.pos+24)%24||24;gUpdate();setTimeout(()=>gMove(pi,steps,()=>gLand(pi)),gIsHere()?700:0);return}
+    if(c.back&&!p.out){gUpdate();setTimeout(()=>gMove(pi,-c.back,()=>gLand(pi)),gIsHere()?700:0);return}
+    after();return}
+  if(s.t==="tax"){glog(`${esc(p.name)} paga ${gMoney(s.a)} de gastos de gira`);if(!p.bot)gNote(`Gastos de gira: pagas ${gMoney(s.a)}.`);gPay(pi,null,s.a);after();return}
+  if(s.t==="bonus"){p.money+=s.a;if(!p.bot){SFX.ok();gNote(`¡Firmas autógrafos y cobras ${gMoney(s.a)}!`)}glog(`${esc(p.name)} firma autógrafos y cobra ${gMoney(s.a)}`);after();return}
+  if(s.t==="skip"){p.skip=true;glog(`${esc(p.name)} se queda ensayando y pierde el próximo turno`);if(!p.bot)gNote("Ensayo extra: pierdes el próximo turno.");after();return}
+  after();
+}
+function gBotUpgrade(pi){const p=G.players[pi];
+  Object.keys(G.own).map(Number).filter(k=>G.own[k]===pi&&gFull(pi,GSQ[k].g)).sort((a,b)=>GSQ[b].p-GSQ[a].p).forEach(k=>{
+    while((G.stars[k]||0)<3&&p.money-gUp(k)>=gReserve()+80){p.money-=gUp(k);G.stars[k]=(G.stars[k]||0)+1;glog(`${esc(p.name)} pone ${G.stars[k]} ★ en ${GSQ[k].n}`)}})}
+function gEndTurn(){
+  if(G.over)return;G.sel=null;
+  const alive=G.players.filter(p=>!p.out);if(alive.length<=1||G.players[0].out){gFinish();return}
+  let t=G.turn;do{t=(t+1)%G.players.length;if(t===0)G.round++}while(G.players[t].out);
+  if(G.round>G.maxRounds){G.round=G.maxRounds;gFinish();return}
+  G.turn=t;gStartTurn();
+}
+function gStartTurn(){
+  if(G.over)return;if(!gIsHere()){G.paused=true;return}
+  const p=G.players[G.turn];gUpdate();
+  if(p.skip){p.skip=false;glog(`${esc(p.name)} sigue ensayando y pierde este turno`);gNote(`${esc(p.name)} pierde este turno por quedarse ensayando.`);G.phase="bot";gPanel();setTimeout(gEndTurn,900);return}
+  if(p.bot){G.phase="bot";gPanel();gNote(`Turno de <strong>${esc(p.name)}</strong> ${p.ic}…`);setTimeout(()=>{if(!gIsHere()){G.paused=true;G.phase="botwait";return}gRoll()},900);return}
+  G.phase="roll";gPanel();say("¡Te toca! Tira los dados.");
+}
+function gWorth(k){const p=G.players[k];if(p.out)return -1;return p.money+Object.keys(G.own).filter(i=>G.own[i]===k).reduce((s,i)=>s+GSQ[i].p+(G.stars[i]||0)*gUp(+i),0)}
+function gFinish(){
+  G.over=true;G.phase="over";G.sel=null;
+  const ranked=G.players.map((p,k)=>({p,k,w:gWorth(k)})).sort((a,b)=>b.w-a.w),win=ranked[0].k===0,me=ranked.find(r=>r.k===0);
+  const medal=["🥇","🥈","🥉","4º"];
+  $("gInfo").innerHTML=`<b>Resultado de la gira</b>`+ranked.map((r,i)=>`<div class="wrow${r.k===0?" me":""}"><span>${medal[i]}</span><span class="n">${r.p.ic} ${esc(r.p.name)}</span><span>${r.p.out?"sin dinero":gMoney(r.w)}</span></div>`).join("")+`<p class="note" style="text-align:left">Cuenta el dinero más el valor de las ciudades y estrellas.</p>`;
+  if(win){SFX.applause();addPoints("tour",50+10*G.lv);finishRun("tour","Magnate de la gira");const up=G.lv<LVMAX;lvUp("tour",G.lv);
+    say(`¡Has ganado la gira mundial!${up?` Has desbloqueado el nivel ${G.lv+1}, con rivales más duros.`:""}`)}
+  else{addPoints("tour",Math.max(5,Math.round(Math.max(0,me.w)/100)));finishRun("tour",null);SFX.bad();say(`La gira la gana <strong>${esc(ranked[0].p.name)}</strong>. ¡Inténtalo otra vez!`)}
+  renderLv("tour",lvCurrent("tour"),startTourMenu);gPanel();
+}
+function startTourMenu(){
+  G.lv=lvCurrent("tour");renderLv("tour",G.lv,startTourMenu);$("gSetup").hidden=false;$("gPlay").hidden=true;
+  const nb=gBots(G.lv),bm=Math.round(1500*(1+Math.min(.6,(G.lv-1)*.015)));
+  $("gSetupInfo").textContent=`Nivel ${G.lv}: ${nb} ${nb===1?"rival":"rivales"}, ${G.maxRounds} rondas. Tú empiezas con 1.500 € y ${nb===1?"tu rival":"cada rival"} con ${bm.toLocaleString("es-ES")} €.`;
+  $("gCont").hidden=!(G.players.length&&!G.over);
+  say("¡Empieza la gira mundial! Compra escenarios en ciudades de todo el mundo y cobra a tus rivales cuando caigan en ellos.");
+}
+function gStart(){
+  beginRun("tour");const me=cur(),lv=G.lv,bm=Math.round(1500*(1+Math.min(.6,(lv-1)*.015)));
+  G.players=[{name:me?me.name:"Tú",ic:"🎤",c:"#f5d36b",money:1500,pos:0,bot:false}].concat(GBOTS.slice(0,gBots(lv)).map(b=>({...b,money:bm,pos:0,bot:true})));
+  G.own={};G.stars={};G.turn=0;G.round=1;G.over=false;G.busy=false;G.log=[];G.sel=null;G.deck=shuffle(GCARDS);G.paused=false;
+  $("gSetup").hidden=true;$("gPlay").hidden=false;$("gLog").innerHTML="";gBuild();glog("¡Empieza la gira mundial!");gStartTurn();
+}
+$("gStart").onclick=()=>{SFX.intro();gStart()};
+$("gCont").onclick=()=>{$("gSetup").hidden=true;$("gPlay").hidden=false;gBuild();$("gLog").innerHTML=G.log.map(x=>`<span>${x}</span>`).join("");G.paused=false;
+  const p=G.players[G.turn];if(!G.busy&&p&&!p.bot&&["roll","decide","end"].includes(G.phase))gPanel();else if(!G.busy)gStartTurn();else gPanel()};
+
+/* ================= NEW VERSION NOTICE (website only) ================= */
+const APP_VERSION="20261103-161618";
+(function(){
+  if(APP_VERSION.startsWith("__")||!/^https?:$/.test(location.protocol))return;
+  let latest=null,snoozeUntil=0;
+  function check(){if(document.hidden)return;
+    fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{
+      if(j&&j.version&&j.version!==APP_VERSION){latest=j.version;if(Date.now()>=snoozeUntil)$("upd").hidden=false}}).catch(()=>{})}
+  $("updGo").onclick=()=>{try{lsSave()}catch(e){}location.replace(location.pathname+"?v="+encodeURIComponent(latest||Date.now()))};
+  $("updLater").onclick=()=>{$("upd").hidden=true;snoozeUntil=Date.now()+10*60*1000};
+  setTimeout(check,5000);setInterval(check,60*1000);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)check()});
+})();
+
 /* ================= PLAYERS, POINTS & MEDALS ================= */
-const GAMES={quiz:"El gran quiz",rhythm:"Moonwalk al ritmo",timeline:"Línea del tiempo",memory:"Parejas brillantes",puzzle:"Puzles",sopa:"Sopa de letras"};
-const START={quiz:startQuiz,rhythm:rhythmIntro,timeline:startTimeline,memory:startMemory,puzzle:puzzleGallery,sopa:startSopa};
+const GAMES={quiz:"El gran quiz",rhythm:"Moonwalk al ritmo",timeline:"Línea del tiempo",memory:"Parejas brillantes",puzzle:"Puzles",sopa:"Sopa de letras",tour:"Gira mundial"};
+const START={quiz:startQuiz,rhythm:rhythmIntro,timeline:startTimeline,memory:startMemory,puzzle:puzzleGallery,sopa:startSopa,tour:startTourMenu};
 const LS="destello-players-v1";
 const Store={db:null,players:{},writing:{},dirty:{}};
 const RUN={};let ME=null,lastMe=null,pendingGame=null;
@@ -1094,7 +1348,7 @@ WORDS.push(
  {w:"SUPERBOWL",label:"SUPER BOWL",f:"En 1993 actuó en el descanso de la Super Bowl."},
  {w:"WIZ",label:"WIZ",f:"En The Wiz hizo de Espantapájaros."}
 );
-["quiz","rhythm","timeline","memory","puzzle"].forEach(g=>{const pb=$("pts-"+g);if(pb){const d=document.createElement("div");d.className="row seg lvls";d.id="lv-"+g;pb.after(d)}});
+["quiz","rhythm","timeline","memory","puzzle","tour"].forEach(g=>{const pb=$("pts-"+g);if(pb){const d=document.createElement("div");d.className="row seg lvls";d.id="lv-"+g;pb.after(d)}});
 
 /* ================= DESTELLO (sequined microphone) ================= */
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
