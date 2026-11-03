@@ -234,6 +234,8 @@ button:focus-visible{outline:3px solid var(--spot);outline-offset:2px}
 .gtable{display:grid;grid-template-columns:1fr auto auto auto;gap:4px 14px;font-size:14px;font-variant-numeric:tabular-nums}
 .gtable span:not(:nth-child(4n+1)){text-align:right}
 .gtable .h{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.ren{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.ren .nrow{width:100%}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chips span{font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid var(--spot);color:var(--spot)}
 #cloudBox:empty,#worldRank:empty{display:none}
@@ -1266,7 +1268,7 @@ $("gCont").onclick=()=>{$("gSetup").hidden=true;$("gPlay").hidden=false;gMode();
   const p=G.players[G.turn];if(!G.busy&&p&&!p.bot&&["roll","decide","end"].includes(G.phase))gPanel();else if(!G.busy)gStartTurn();else gPanel()};
 
 /* ================= NEW VERSION NOTICE (website only) ================= */
-const APP_VERSION="20261103-171853";
+const APP_VERSION="20261103-172354";
 (function(){
   if(APP_VERSION.startsWith("__")||!/^https?:$/.test(location.protocol))return;
   let latest=null,snoozeUntil=0;
@@ -1347,12 +1349,26 @@ function renderRanking(){
   el.innerHTML=ids.map((id,k)=>{const p=Store.players[id];
     const rows=Object.keys(GAMES).map(g=>{const s=p.games[g]||{};return `<span>${GAMES[g]}</span><span>${s.pts||0}</span><span>${s.best||0}</span><span>${g==="sopa"?p.sopaLevel:((p.levels||{})[g]||1)}</span>`}).join("");
     return `<div class="pcard"><div class="top"><b>${k===0&&p.total>0?"👑 ":""}${esc(p.name)}</b><span class="tot">${p.total} pts</span></div>
+      <div class="ren" id="ren-${id}"><button class="linkbtn" type="button" data-ren="${id}">✏️ Cambiar nombre</button></div>
       <div class="gtable"><span class="h">Juego</span><span class="h">Puntos</span><span class="h">Récord</span><span class="h">Nivel</span>${rows}</div>
       <p class="note" style="text-align:left">Puzles terminados: ${p.puzzles.length} de ${PUZ.length}</p>
       ${p.medals.length?`<div class="chips">${p.medals.map(m=>`<span>🏅 ${esc(m)}</span>`).join("")}</div>`:`<p class="note" style="text-align:left">Aún sin medallas. ¡A jugar!</p>`}</div>`}).join("");
 }
 $("go-ranking").onclick=()=>{show("ranking");renderRanking();try{if(window.Cloud&&Cloud.renderWorld)Cloud.renderWorld()}catch(e){}SFX.sparkle();say("¡Estos son los puntos y las medallas de cada jugador!")};
 $("b-ranking").onclick=toMenu;
+/* rename a player (saved on this device and online if the player has a code) */
+$("rankList").addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-ren]");if(b)renameUI(b.dataset.ren)});
+function renameUI(id){const p=Store.players[id],box=$("ren-"+id);if(!p||!box)return;
+  box.innerHTML=`<label class="note" for="renIn" style="text-align:left">Nuevo nombre (máximo 16 letras)</label><div class="nrow"><input id="renIn" maxlength="16" autocomplete="off"><button class="btn" id="renOk" type="button">Guardar</button></div><button class="linkbtn" id="renNo" type="button">Cancelar</button><p class="note" id="renMsg" role="status" style="text-align:left;color:var(--spot)"></p>`;
+  const inp=$("renIn");inp.value=p.name;inp.focus();try{inp.select()}catch(e){}
+  const ok=()=>{const n=inp.value.trim().slice(0,16);
+    if(!n){$("renMsg").textContent="Escribe un nombre.";return}
+    if(n===p.name){renderRanking();return}
+    if(Object.keys(Store.players).some(k=>k!==id&&Store.players[k].name.toLowerCase()===n.toLowerCase())){$("renMsg").textContent="Ya hay otro jugador con ese nombre en este dispositivo.";return}
+    p.name=n;p.updated=Date.now();savePlayer(id);SFX.ok();renderMe();renderRanking();
+    try{if(window.Cloud&&Cloud.renderWorld)Cloud.renderWorld()}catch(e){}
+    say(`¡Listo! Ahora el jugador se llama <strong>${esc(n)}</strong>.${p.code?" También se ha cambiado en la clasificación mundial.":""}`)};
+  $("renOk").onclick=ok;inp.addEventListener("keydown",e=>{if(e.key==="Enter")ok()});$("renNo").onclick=()=>renderRanking()}
 renderMe();
 
 /* ================= BACKUP: save / load progress file ================= */
