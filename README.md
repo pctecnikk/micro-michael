@@ -49,6 +49,12 @@ window.SUPABASE_CONFIG = {
 
 La URL y la clave pública no son secretas. La tabla está cerrada: solo se puede usar a través de las funciones de `supabase.sql`, que guardan el código cifrado y en la clasificación solo muestran el nombre de jugador y los puntos.
 
+## Ver quién está jugando ahora (solo tú)
+
+Mientras alguien tiene el juego abierto, avisa cada 30 segundos a tu base de datos de en qué juego está. Los jugadores no ven nada de esto.
+
+Para verlo: Supabase → tu proyecto → **Table Editor** → **jugando_ahora**. Salen las personas que han dado señales en los últimos 2 minutos, con su nombre de jugador (si ha elegido uno), el juego y desde cuándo están conectadas. Los avisos de más de un día se borran solos.
+
 ## Avisar de una versión nueva
 
 La web consulta `version.json` cada minuto. Cuando ese número cambia, a quien esté jugando le sale un aviso para actualizar, sin perder su progreso.

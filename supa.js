@@ -162,6 +162,22 @@
   try { new MutationObserver(() => { if (!document.getElementById("v-login").hidden) { msg = ""; renderBox(); } }).observe(document.getElementById("v-login"), { attributes: true, attributeFilter: ["hidden"] }); } catch (e) {}
   try { new MutationObserver(() => { if (!document.getElementById("v-ranking").hidden) loadTop(); }).observe(document.getElementById("v-ranking"), { attributes: true, attributeFilter: ["hidden"] }); } catch (e) {}
 
+  /* tell the owner's dashboard which game is being played (nothing is shown to players) */
+  let sid = null;
+  try { sid = sessionStorage.getItem("mm-sid"); } catch (e) {}
+  if (!sid) { sid = Math.random().toString(36).slice(2, 10) + Date.now().toString(36); try { sessionStorage.setItem("mm-sid", sid); } catch (e) {} }
+  function ping() {
+    if (document.hidden) return;
+    const p = cur();
+    let v = "menu"; try { v = curView; } catch (e) {}
+    const game = (typeof GAMES === "object" && GAMES[v]) || ({ menu: "Menú", login: "Eligiendo jugador", ranking: "Puntos y medallas" }[v]) || v;
+    rpc("mm_ping", { p_session: sid, p_name: p ? String(p.name).slice(0, 16) : null, p_game: game, p_code: !!(p && p.code) }).catch(() => {});
+  }
+  setTimeout(ping, 3000); setInterval(ping, 30000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) ping(); });
+  window.addEventListener("hashchange", () => setTimeout(ping, 500));
+  window.addEventListener("popstate", () => setTimeout(ping, 500));
+
   renderBox();
   loadTop();
 })();

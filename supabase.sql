@@ -193,3 +193,47 @@ grant execute on function public.mm_load(text) to anon, authenticated;
 grant execute on function public.mm_top(integer) to anon, authenticated;
 grant execute on function public.mm_delete(text) to anon, authenticated;
 grant execute on function public.mm_regen(text) to anon, authenticated;
+-- ===== Quién está jugando ahora (solo lo ve el dueño, desde el panel de Supabase) =====
+-- Cada pestaña del juego abierta avisa cada 30 segundos de que sigue jugando
+-- y de en qué juego está. Los avisos de más de un día se borran solos.
+create table if not exists public.mm_presence (
+  session     text primary key check (char_length(session) between 8 and 40),
+  name        text,
+  game        text,
+  has_code    boolean not null default false,
+  first_seen  timestamptz not null default now(),
+  last_seen   timestamptz not null default now()
+);
+alter table public.mm_presence enable row level security;
+revoke all on table public.mm_presence from anon, authenticated;
+
+create or replace function public.mm_ping(p_session text, p_name text, p_game text, p_code boolean)
+returns void
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+begin
+  if p_session is null or char_length(p_session) not between 8 and 40 then return; end if;
+  insert into public.mm_presence (session, name, game, has_code)
+  values (p_session, left(p_name, 16), left(p_game, 30), coalesce(p_code, false))
+  on conflict (session) do update
+     set name = excluded.name, game = excluded.game, has_code = excluded.has_code, last_seen = now();
+  delete from public.mm_presence where last_seen < now() - interval '1 day';
+end
+$$;
+revoke all on function public.mm_ping(text, text, text, boolean) from public;
+grant execute on function public.mm_ping(text, text, text, boolean) to anon, authenticated;
+
+-- Vista para ti: quién ha dado señales en los últimos 2 minutos.
+-- Ábrela en Supabase → Table Editor → jugando_ahora.
+create or replace view public.jugando_ahora as
+  select coalesce(name, '(sin nombre)') as jugador,
+         game                            as juego,
+         has_code                        as tiene_codigo,
+         first_seen                      as conectado_desde,
+         last_seen                       as ultima_senal
+    from public.mm_presence
+   where last_seen > now() - interval '2 minutes'
+   order by last_seen desc;
+revoke all on public.jugando_ahora from anon, authenticated;
