@@ -131,6 +131,41 @@ begin
 end
 $$;
 
+-- Cambia el código de un jugador por uno nuevo (el anterior deja de valer).
+-- Hace falta el código actual, que el dispositivo del jugador tiene guardado.
+create or replace function public.mm_regen(p_code text)
+returns json
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare
+  v_chars text := 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  v_code  text;
+  v_try   int := 0;
+  i       int;
+begin
+  if not exists (select 1 from public.mm_players where code_hash = public.mm_hash(p_code)) then
+    return null;
+  end if;
+  loop
+    v_code := 'MJ-';
+    for i in 1..8 loop
+      v_code := v_code || substr(v_chars, 1 + (get_byte(gen_random_bytes(1), 0) % length(v_chars)), 1);
+      if i = 4 then v_code := v_code || '-'; end if;
+    end loop;
+    begin
+      update public.mm_players set code_hash = public.mm_hash(v_code), updated_at = now()
+       where code_hash = public.mm_hash(p_code);
+      return json_build_object('code', v_code);
+    exception when unique_violation then
+      v_try := v_try + 1;
+      if v_try > 5 then raise; end if;
+    end;
+  end loop;
+end
+$$;
+
 -- Clasificación mundial: solo apodo, puntos y medallas.
 create or replace function public.mm_top(p_limit integer default 20)
 returns table (name text, total integer, medals integer)
@@ -151,8 +186,10 @@ revoke all on function public.mm_save(text, text, integer, integer, jsonb) from 
 revoke all on function public.mm_load(text) from public;
 revoke all on function public.mm_top(integer) from public;
 revoke all on function public.mm_delete(text) from public;
+revoke all on function public.mm_regen(text) from public;
 grant execute on function public.mm_create(text) to anon, authenticated;
 grant execute on function public.mm_save(text, text, integer, integer, jsonb) to anon, authenticated;
 grant execute on function public.mm_load(text) to anon, authenticated;
 grant execute on function public.mm_top(integer) to anon, authenticated;
 grant execute on function public.mm_delete(text) to anon, authenticated;
+grant execute on function public.mm_regen(text) to anon, authenticated;

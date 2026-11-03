@@ -30,7 +30,13 @@
     clearTimeout(timers[id]);
     timers[id] = setTimeout(() => {
       rpc("mm_save", { p_code: p.code, p_name: String(p.name || "Jugador").slice(0, 16), p_total: Math.max(0, Math.round(p.total || 0)), p_medals: (p.medals || []).length, p_data: strip(p) })
-        .then(ok => { if (ok === false) console.warn("Ese código ya no existe en el servidor"); loadTop(); })
+        .then(ok => {
+          if (ok === false && Store.players[id] && Store.players[id].code === p.code) {
+            delete Store.players[id].code; lsSave(); refreshPlayerUI(); renderBox(); renderWorld();
+            say("El código de " + esc(p.name) + " ha cambiado en otro dispositivo. Ponlo en «¿Ya tienes un código?» para seguir sumando puntos online.");
+          }
+          loadTop();
+        })
         .catch(e => console.warn("No se pudo guardar online", e));
     }, 800);
   }
@@ -112,13 +118,33 @@
     } catch (e) { setMsg("No se ha podido recuperar. Revisa la conexión e inténtalo otra vez. (" + e.message + ")"); busy = false; }
   }
 
+  /* make a new code for this player; the old one stops working, points stay */
+  function regenUI() {
+    const p = cur(), b = document.getElementById("wRegenBox"); if (!p || !p.code || !b) return;
+    b.innerHTML = '<p class="note" style="text-align:left">Se creará un código nuevo para <b id="rgName"></b> y <b>el anterior dejará de funcionar</b>. Tus puntos y tu puesto en la clasificación se mantienen. En tus otros dispositivos tendrás que poner el código nuevo en «¿Ya tienes un código?».</p>' +
+      '<div class="row" style="justify-content:flex-start"><button class="btn" id="rgOk" type="button">Sí, crear código nuevo</button><button class="btn ghost" id="rgNo" type="button">Cancelar</button></div><p class="note" id="rgMsg" role="status" style="text-align:left;color:var(--spot)"></p>';
+    document.getElementById("rgName").textContent = p.name;
+    document.getElementById("rgNo").onclick = () => { b.innerHTML = ""; };
+    document.getElementById("rgOk").onclick = async () => {
+      const ok = document.getElementById("rgOk"); ok.disabled = true;
+      try {
+        const r = await rpc("mm_regen", { p_code: p.code });
+        if (!r || !r.code) { document.getElementById("rgMsg").textContent = "Este código ya no existe en el servidor. Crea uno nuevo al elegir jugador."; ok.disabled = false; return; }
+        p.code = r.code; p.updated = Date.now(); lsSave(); savePlayer(ME);
+        SFX.sparkle(); renderWorld(); renderBox();
+        const m = document.getElementById("wRegenBox"); if (m) m.innerHTML = '<p class="note" style="text-align:left;color:var(--spot)">¡Código nuevo creado! Apúntalo bien.</p>';
+        say("¡Código nuevo creado! Apúntalo bien: el anterior ya no funciona.");
+      } catch (e) { document.getElementById("rgMsg").textContent = "No se ha podido crear el código nuevo. Revisa la conexión e inténtalo otra vez."; ok.disabled = false; }
+    };
+  }
+
   function loadTop() {
     rpc("mm_top", { p_limit: 20 }).then(r => { top = Array.isArray(r) ? r : []; renderWorld(); }).catch(() => {});
   }
   function renderWorld() {
     if (!world) return;
     const p = cur();
-    const mine = p && p.code ? '<p class="note" style="text-align:left">Tu código: <b id="wCode"></b></p>' : "";
+    const mine = p && p.code ? '<div class="codebox"><span class="note">Tu código:</span><b id="wCode"></b><button class="linkbtn" id="wRegen" type="button">🔄 Generar código nuevo</button></div><div id="wRegenBox"></div>' : "";
     if (!top.length) {
       world.innerHTML = "<h2>Clasificación mundial</h2><p class=\"note\" style=\"text-align:left\">Todavía no hay nadie. Crea tu código al elegir jugador y sé la primera persona.</p>" + mine;
     } else {
@@ -129,6 +155,7 @@
       }).join("") + mine;
     }
     const wc = document.getElementById("wCode"); if (wc && p) wc.textContent = p.code;
+    const rg = document.getElementById("wRegen"); if (rg) rg.onclick = regenUI;
   }
 
   // keep the box in step with the chosen player

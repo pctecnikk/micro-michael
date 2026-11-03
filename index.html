@@ -165,7 +165,7 @@ button:focus-visible{outline:3px solid var(--spot);outline-offset:2px}
 .wwheelbox{position:relative;width:min(320px,86vw);max-width:100%}
 #wWheel{display:block;width:100%;aspect-ratio:1;border-radius:50%}
 .wkeys{display:flex;flex-direction:column;gap:10px;width:100%}
-.wrow{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.wkrow{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 .wkey{font:inherit;font-weight:900;font-size:17px;width:40px;height:44px;border-radius:10px;border:2px solid var(--line);background:var(--stage-2);color:var(--ink);cursor:pointer}
 .wkey.vow{border-color:#7fe0ff}
 .wkey.hit{background:var(--good);color:#120f1c;border-color:var(--good)}
@@ -421,9 +421,9 @@ body.fixbubble .bubble{height:7.4em;overflow-y:auto}
         <div class="row"><button class="btn" id="wSpin" type="button">🎡 Girar la ruleta</button><button class="btn ghost" id="wSolveBtn" type="button">💡 Resolver</button></div>
         <div class="wsolve" id="wSolve" hidden><label class="note" for="wGuess" style="text-align:left">Escribe la respuesta completa:</label><div class="nrow"><input id="wGuess" maxlength="40" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn" id="wSolveOk" type="button">Comprobar</button></div><button class="linkbtn" id="wSolveNo" type="button">Cancelar</button></div>
         <span class="note" style="text-align:left">Consonantes</span>
-        <div class="wrow" id="wCons"></div>
+        <div class="wkrow" id="wCons"></div>
         <span class="note" id="wVowInfo" style="text-align:left"></span>
-        <div class="wrow" id="wVows"></div>
+        <div class="wkrow" id="wVows"></div>
         <p class="note" id="wMsg" role="status" style="color:var(--spot);font-weight:800"></p>
         <div class="row"><button class="btn" id="wAgain" type="button" hidden>Otro panel</button></div>
       </div>
@@ -1443,7 +1443,7 @@ $("wAgain").onclick=()=>{SFX.intro();startWheel()};
 window.addEventListener("resize",()=>{if(!$("v-wheel").hidden)wDrawWheel()});
 
 /* ================= NEW VERSION NOTICE (website only) ================= */
-const APP_VERSION="20261103-173030";
+const APP_VERSION="20261103-173320";
 (function(){
   if(APP_VERSION.startsWith("__")||!/^https?:$/.test(location.protocol))return;
   let latest=null,snoozeUntil=0;
