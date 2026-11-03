@@ -55,6 +55,10 @@ Mientras alguien tiene el juego abierto, avisa cada 30 segundos a tu base de dat
 
 Para verlo: Supabase → tu proyecto → **Table Editor** → **jugando_ahora**. Salen las personas que han dado señales en los últimos 2 minutos, con su nombre de jugador (si ha elegido uno), el juego y desde cuándo están conectadas. Los avisos de más de un día se borran solos.
 
+## Versión
+
+La app muestra la versión que está funcionando: arriba, junto a «Juegos para fans» (por ejemplo `v1.0.0`), y abajo del todo con la fecha y hora de publicación. El número está en `RELEASE` y sube con cada actualización: el último número para cambios pequeños, el del medio para novedades grandes.
+
 ## Avisar de una versión nueva
 
 La web consulta `version.json` cada minuto. Cuando ese número cambia, a quien esté jugando le sale un aviso para actualizar, sin perder su progreso.
@@ -80,5 +84,6 @@ En la clasificación mundial solo se ven el nombre de jugador y los puntos. Si j
 | `supa.js` | Puntos online con código de jugador y clasificación mundial |
 | `supabase-config.js` | URL y clave pública de Supabase (empieza en `null`) |
 | `supabase.sql` | Script para preparar la base de datos en Supabase |
+| `RELEASE` | Número de la versión publicada |
 | `version.json` | Número de versión para avisar de actualizaciones |
 | `manifest.webmanifest`, `icon-*.png`, `icon.svg` | Icono y nombre al añadirlo a la pantalla de inicio |

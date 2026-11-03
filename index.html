@@ -318,7 +318,7 @@ body.fixbubble .bubble{height:7.4em;overflow-y:auto}
 
 <div class="wrap">
   <header>
-    <span class="eyebrow">Juegos para fans</span>
+    <span class="eyebrow">Juegos para fans<span id="verTag"></span></span>
     <h1>Micro Michael y el Rey del Pop</h1>
   </header>
   <div class="who" id="who" hidden>Juega <b id="whoName"></b> · <span><b id="whoPts">0</b> puntos</span><button class="linkbtn" id="whoChange">Cambiar</button></div>
@@ -486,10 +486,11 @@ body.fixbubble .bubble{height:7.4em;overflow-y:auto}
     <button class="btn ghost" id="sound" aria-pressed="true">🎵 Sonidos: sí</button>
   </div>
   <p class="note">Juego de fans no oficial. No está afiliado a Michael Jackson, a sus herederos ni a sus discográficas.</p>
+  <p class="note" id="appVer"></p>
   <p class="note" id="voicehint" hidden style="color:var(--spot)">Este dispositivo no ha reproducido la voz de Michael, el micrófono. Prueba a quitar el modo silencio, subir el volumen o abrir este enlace en Safari o Chrome. Mientras tanto, puedes jugar leyendo.</p>
 </div>
 
-<div class="update" id="upd" hidden role="status"><span>✨ Hay una versión nueva del juego. Tu progreso no se pierde.</span><button id="updGo" type="button">Actualizar</button><button id="updLater" type="button">Luego</button></div>
+<div class="update" id="upd" hidden role="status"><span id="updTxt">✨ Hay una versión nueva del juego. Tu progreso no se pierde.</span><button id="updGo" type="button">Actualizar</button><button id="updLater" type="button">Luego</button></div>
 
 <script>
 const $=id=>document.getElementById(id);
@@ -1443,13 +1444,17 @@ $("wAgain").onclick=()=>{SFX.intro();startWheel()};
 window.addEventListener("resize",()=>{if(!$("v-wheel").hidden)wDrawWheel()});
 
 /* ================= NEW VERSION NOTICE (website only) ================= */
-const APP_VERSION="20261103-174352";
+const APP_VERSION="20261103-222722",APP_RELEASE="1.0.0",APP_DATE="3 de noviembre de 2026 a las 22:27";
+/* show the version that is running now */
+(function(){const live=!APP_RELEASE.startsWith("__");
+  $("verTag").textContent=live?" · v"+APP_RELEASE:"";
+  $("appVer").textContent=live?`Versión ${APP_RELEASE} · publicada el ${APP_DATE}`:"Versión de prueba";})();
 (function(){
   if(APP_VERSION.startsWith("__")||!/^https?:$/.test(location.protocol))return;
   let latest=null,snoozeUntil=0;
   function check(){if(document.hidden)return;
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{
-      if(j&&j.version&&j.version!==APP_VERSION){latest=j.version;if(Date.now()>=snoozeUntil)$("upd").hidden=false}}).catch(()=>{})}
+      if(j&&j.version&&j.version!==APP_VERSION){latest=j.version;if(j.release)$("updTxt").textContent=`✨ Hay una versión nueva (${j.release}). Tu progreso no se pierde.`;if(Date.now()>=snoozeUntil)$("upd").hidden=false}}).catch(()=>{})}
   $("updGo").onclick=()=>{try{lsSave()}catch(e){}location.replace(location.pathname+"?v="+encodeURIComponent(latest||Date.now()))};
   $("updLater").onclick=()=>{$("upd").hidden=true;snoozeUntil=Date.now()+10*60*1000};
   setTimeout(check,5000);setInterval(check,60*1000);
