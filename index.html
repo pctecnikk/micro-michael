@@ -1263,7 +1263,7 @@ $("gCont").onclick=()=>{$("gSetup").hidden=true;$("gPlay").hidden=false;gMode();
   const p=G.players[G.turn];if(!G.busy&&p&&!p.bot&&["roll","decide","end"].includes(G.phase))gPanel();else if(!G.busy)gStartTurn();else gPanel()};
 
 /* ================= NEW VERSION NOTICE (website only) ================= */
-const APP_VERSION="20261103-164124";
+const APP_VERSION="20261103-165045";
 (function(){
   if(APP_VERSION.startsWith("__")||!/^https?:$/.test(location.protocol))return;
   let latest=null,snoozeUntil=0;
@@ -1479,10 +1479,5 @@ function hostLoop(t){hc.clearRect(0,0,184,240);drawMic(hc,92,70+(reduce?0:Math.s
 requestAnimationFrame(hostLoop);
 </script>
 
-<!-- Guardado online (opcional): Firebase. Rellena firebase-config.js para activarlo. -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
-<script src="cloud.js"></script>
+<!-- END-GAME -->
 </body></html>
