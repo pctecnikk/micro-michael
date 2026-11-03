@@ -94,6 +94,64 @@ button:focus-visible{outline:3px solid var(--spot);outline-offset:2px}
 .tap{width:100%;font:inherit;font-family:var(--display);font-size:22px;padding:22px;border-radius:18px;border:0;background:var(--spot);color:#1a1405;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 .tap:active{transform:scale(.98)}
 .tap:disabled{opacity:.4;cursor:default}
+
+/* ===== computer screens: wider layout, everything bigger ===== */
+@media (min-width:1000px){
+  .wrap{max-width:1180px;gap:22px}
+  header .eyebrow{font-size:14px}
+  h1{font-size:40px}
+  .host canvas{width:110px;height:143px}
+  .bubble{font-size:19px;padding:18px 22px}
+  body.fixbubble .bubble{height:6.4em}
+  .who{font-size:16px}
+  /* menu: 3 columns, the board game across the bottom */
+  .games{grid-template-columns:repeat(3,1fr);gap:16px}
+  #go-tour{order:10;grid-column:1/-1}
+  .game{padding:22px}
+  .game .ico{font-size:36px}
+  .game b{font-size:22px}
+  .game span{font-size:16px}
+  .pbar{font-size:16px;padding:12px 18px}
+  .strip{font-size:16px}
+  .lvlabel{font-size:17px}
+  .lvlabel b{font-size:24px}
+  .lvls .btn,#sLevels .btn{font-size:17px;padding:9px 18px}
+  .btn{font-size:18px;padding:14px 26px}
+  .btn.ghost{font-size:16px}
+  .note{font-size:15px}
+  h2{font-size:22px}
+  /* quiz */
+  .q{font-size:28px}
+  .answers{gap:14px}
+  .opt{font-size:20px;padding:18px 20px;min-height:72px}
+  .medal .big{font-size:44px}
+  /* rhythm */
+  .stagebox{max-width:900px;margin:0 auto;width:100%}
+  .tap{max-width:900px;margin:0 auto;font-size:28px;padding:28px}
+  /* timeline */
+  .track{font-size:19px;gap:10px}
+  .slot .yr{font-size:18px;min-width:64px}
+  .picks{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  /* memory: square cards sized to fit the screen height */
+  .mem{max-width:min(860px,calc(100dvh / var(--z,1) * 1.15));margin:0 auto;gap:12px;width:100%}
+  .card{aspect-ratio:1}
+  .mem .card,.mem[data-c="5"] .card,.mem[data-c="6"] .card{font-size:clamp(28px,3.4vw,56px)}
+  /* puzzles */
+  .pgallery{grid-template-columns:repeat(5,1fr);gap:14px}
+  .pgallery .pthumb{font-size:15px}
+  .board{max-width:min(760px,calc(100dvh / var(--z,1) - 300px))}
+  .pfoot img{width:110px;height:110px}
+  /* word search: grid sized to the screen height */
+  .ws{max-width:min(780px,calc(100dvh / var(--z,1) - 300px));gap:4px}
+  .ws .cell,.ws[data-n] .cell{font-size:calc(min(780px,100dvh / var(--z,1) - 300px) / var(--n,10) * .5);border-radius:6px}
+  .wlist span{font-size:16px;padding:8px 14px}
+  /* players and ranking */
+  .plist{grid-template-columns:repeat(3,1fr)}
+  .rank{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  .pcard{padding:18px 20px}
+  .gtable{font-size:16px}
+  .nrow input{font-size:19px}
+}
 /* gira mundial */
 .gboard{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:repeat(7,minmax(0,1fr));gap:2px;width:100%;max-width:520px;aspect-ratio:1;margin:0 auto}
 .gsq{position:relative;background:var(--stage-2);border:1px solid var(--line);border-radius:4px;overflow:hidden;display:flex;flex-direction:column;align-items:center;font-size:clamp(7px,2.1vw,11px);line-height:1.1;text-align:center;padding:0 1px 1px;cursor:pointer;min-width:0;min-height:0;color:var(--ink)}
@@ -539,7 +597,7 @@ function rhythmIntro(){
   say("¡Vamos a bailar! Cuando suene la música, pulsa el botón justo cuando el círculo pequeño llegue al grande. Cada paso bien hecho, ¡hago el moonwalk!");
 }
 function stageW(){return $("rStage").clientWidth||340}
-function sizeStage(){const c=$("rStage"),d=Math.min(2,window.devicePixelRatio||1);c.width=Math.round(stageW()*d);c.height=Math.round(220*d)}
+function sizeStage(){const c=$("rStage"),d=Math.min(4,(window.devicePixelRatio||1)*(window.UIZ||1));c.width=Math.round(stageW()*d);c.height=Math.round(220*d)}
 window.addEventListener("resize",()=>{if(!$("v-rhythm").hidden){sizeStage();drawStage()}});
 function startRhythm(){
   if(!A()){say("Este dispositivo no deja sonar música aquí. Prueba a abrir el enlace en Safari o Chrome.");return}
@@ -941,7 +999,7 @@ function startSopa(){
   const used=S.words.map(o=>o.w).join(""),AL="ABCDEFGHIJLMNOPRSTUVYZ";
   S.grid=S.grid.map(ch=>ch||(cfg.decoy&&Math.random()<.6?used[Math.floor(Math.random()*used.length)]:AL[Math.floor(Math.random()*AL.length)]));
   beginRun("sopa");S.found=[];S.start=-1;S.cellCol={};$("sMedal").hidden=true;$("sAgain").hidden=true;
-  const g=$("sGrid");g.style.gridTemplateColumns=`repeat(${S.n},1fr)`;g.dataset.n=S.n;
+  const g=$("sGrid");g.style.gridTemplateColumns=`repeat(${S.n},1fr)`;g.dataset.n=S.n;g.style.setProperty("--n",S.n);
   $("sNote").textContent=`Nivel ${lv}: las palabras van ${cfg.txt}. Desliza el dedo desde la primera letra hasta la última, o toca la primera y luego la última.`;
   renderSopa();updateHint();renderLevels();
   say(`¡Sopa de letras, <strong>nivel ${lv}</strong>! Hay ${cfg.w} palabras escondidas. Van ${cfg.txt}.`);
@@ -1191,7 +1249,13 @@ function gStart(){
 }
 $("gStart").onclick=()=>{SFX.intro();gStart();gMode()};
 /* wide-screen layout helpers */
-function gMode(){document.body.classList.toggle("tourplay",!$("v-tour").hidden&&!$("gPlay").hidden)}
+function gMode(){document.body.classList.toggle("tourplay",!$("v-tour").hidden&&!$("gPlay").hidden);fitZoom()}
+/* 2K/4K screens: scale the whole layout up (the board game scales itself) */
+function fitZoom(){let z=1;try{const w=window.innerWidth;if(w>=1700&&matchMedia("(pointer:fine)").matches)z=Math.min(2.6,w/1500)}catch(e){}
+  if(document.body.classList.contains("tourplay"))z=1;
+  window.UIZ=z;const el=document.querySelector(".wrap");if(el)el.style.zoom=z===1?"":z.toFixed(3);document.documentElement.style.setProperty("--z",z.toFixed(3));
+  if(!$("v-rhythm").hidden){try{sizeStage();drawStage()}catch(e){}}}
+window.addEventListener("resize",fitZoom);fitZoom();
 try{new MutationObserver(()=>{const m=$("gMsg");if(m)m.innerHTML=$("bubble").innerHTML}).observe($("bubble"),{childList:true,subtree:true,characterData:true})}catch(e){}
 $("gFull").onclick=()=>{try{const d=document;if(d.fullscreenElement){d.exitFullscreen().catch(()=>{})}else{const r=d.documentElement.requestFullscreen&&d.documentElement.requestFullscreen();if(r&&r.catch)r.catch(()=>{$("gFull").hidden=true})}}catch(e){$("gFull").hidden=true}};
 document.addEventListener("fullscreenchange",()=>{$("gFull").textContent=document.fullscreenElement?"⛶ Salir de pantalla completa":"⛶ Pantalla completa"});
@@ -1199,7 +1263,7 @@ $("gCont").onclick=()=>{$("gSetup").hidden=true;$("gPlay").hidden=false;gMode();
   const p=G.players[G.turn];if(!G.busy&&p&&!p.bot&&["roll","decide","end"].includes(G.phase))gPanel();else if(!G.busy)gStartTurn();else gPanel()};
 
 /* ================= NEW VERSION NOTICE (website only) ================= */
-const APP_VERSION="20261103-162208";
+const APP_VERSION="20261103-162750";
 (function(){
   if(APP_VERSION.startsWith("__")||!/^https?:$/.test(location.protocol))return;
   let latest=null,snoozeUntil=0;
