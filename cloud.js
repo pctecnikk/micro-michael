@@ -43,16 +43,36 @@
     lsSave();
   }
 
+  const INAPP = /FBAN|FBAV|Instagram|WhatsApp|Line\/|; wv\)|GSA\//i.test(navigator.userAgent);
+  const STANDALONE = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+  let lastErr = "";
+  function authMsg(e) {
+    const c = (e && e.code) || "";
+    const m = {
+      "auth/unauthorized-domain": "Firebase todavía no permite entrar desde esta web. En Firebase, ve a Authentication → Configuración → Dominios autorizados y añade pctecnikk.github.io.",
+      "auth/operation-not-allowed": "El inicio de sesión con Google no está activado. En Firebase, ve a Authentication → Método de acceso y activa Google.",
+      "auth/configuration-not-found": "Falta activar Authentication en Firebase: Authentication → Comenzar, y después activar Google.",
+      "auth/network-request-failed": "No hay conexión a internet. Inténtalo otra vez.",
+      "auth/web-storage-unsupported": "Este navegador bloquea el inicio de sesión. Abre la web en Chrome o Safari.",
+      "auth/internal-error": "Google no ha dejado entrar desde este navegador. Abre la web en Chrome o Safari.",
+      "auth/popup-blocked": "El navegador ha bloqueado la ventana de Google. Permite las ventanas emergentes e inténtalo otra vez."
+    }[c];
+    let t = m || "No se ha podido entrar con Google.";
+    if (!m && STANDALONE) t += " Si abriste el juego desde el icono de la pantalla de inicio, prueba a abrirlo en Safari o Chrome.";
+    return t + (c ? " (código: " + c + ")" : "");
+  }
+  function showErr(t) { lastErr = t; renderBox(); say(t); }
+
   function signIn() {
-    wantPick = true;
+    if (INAPP) { showErr("Estás dentro del navegador de otra app, como WhatsApp o Instagram, y Google no deja entrar desde ahí. Pulsa el menú ⋮ o el botón de compartir y elige «Abrir en Chrome» o «Abrir en Safari»."); return; }
+    lastErr = ""; wantPick = true;
     auth.signInWithPopup(provider).catch(e => {
-      if (e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment") {
-        auth.signInWithRedirect(provider);
-      } else if (e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") {
-        say("No se ha podido entrar con Google. Inténtalo otra vez.");
-      }
+      if (e.code === "auth/popup-closed-by-user" || e.code === "auth/cancelled-popup-request") return;
+      if (e.code === "auth/operation-not-supported-in-this-environment") { auth.signInWithRedirect(provider).catch(err => showErr(authMsg(err))); return; }
+      console.warn(e); showErr(authMsg(e));
     });
   }
+  auth.getRedirectResult().catch(e => { if (e && e.code) showErr(authMsg(e)); });
   function signOut() { auth.signOut(); }
 
   function renderBox() {
@@ -60,7 +80,9 @@
     if (!uid) {
       box.innerHTML = '<b>Guarda tu progreso online</b>' +
         '<span class="note" style="text-align:left">Entra con Google para no perder tus puntos en ningún móvil y salir en la clasificación mundial. Si no, se guarda solo en este dispositivo.</span>' +
-        '<button class="btn" id="gIn" type="button">Entrar con Google</button>';
+        '<button class="btn" id="gIn" type="button">Entrar con Google</button>' +
+        (lastErr ? '<p class="note" id="gErr" role="alert" style="text-align:left;color:var(--bad)"></p>' : '');
+      if (lastErr) document.getElementById("gErr").textContent = lastErr;
       document.getElementById("gIn").onclick = signIn;
       return;
     }
