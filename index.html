@@ -1268,7 +1268,7 @@ $("gCont").onclick=()=>{$("gSetup").hidden=true;$("gPlay").hidden=false;gMode();
   const p=G.players[G.turn];if(!G.busy&&p&&!p.bot&&["roll","decide","end"].includes(G.phase))gPanel();else if(!G.busy)gStartTurn();else gPanel()};
 
 /* ================= NEW VERSION NOTICE (website only) ================= */
-const APP_VERSION="20261103-172354";
+const APP_VERSION="20261103-172557";
 (function(){
   if(APP_VERSION.startsWith("__")||!/^https?:$/.test(location.protocol))return;
   let latest=null,snoozeUntil=0;
@@ -1289,7 +1289,7 @@ const Store={db:null,players:{},writing:{},dirty:{}};
 const RUN={};let ME=null,lastMe=null,pendingGame=null;
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function slug(n){return n.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,40)||"jugador"}
-function normPlayer(p){p=p||{};return{name:String(p.name||"Jugador").slice(0,16),total:+p.total||0,games:(p.games&&typeof p.games==="object")?JSON.parse(JSON.stringify(p.games)):{},medals:Array.isArray(p.medals)?p.medals.slice(0,100):[],puzzles:Array.isArray(p.puzzles)?p.puzzles.slice():[],sopaLevel:Math.min(50,Math.max(1,+p.sopaLevel||1)),levels:(p.levels&&typeof p.levels==="object")?{...p.levels}:{},code:typeof p.code==="string"&&/^MJ-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(p.code)?p.code:undefined,updated:+p.updated||0}}
+function normPlayer(p){p=p||{};return{name:String(p.name||"Jugador").slice(0,16),total:+p.total||0,games:(p.games&&typeof p.games==="object")?JSON.parse(JSON.stringify(p.games)):{},medals:Array.isArray(p.medals)?p.medals.slice(0,100):[],puzzles:Array.isArray(p.puzzles)?p.puzzles.slice():[],sopaLevel:Math.min(50,Math.max(1,+p.sopaLevel||1)),levels:(p.levels&&typeof p.levels==="object")?{...p.levels}:{},renames:Math.max(0,Math.min(99,+p.renames||0)),code:typeof p.code==="string"&&/^MJ-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(p.code)?p.code:undefined,updated:+p.updated||0}}
 function lsSave(){try{localStorage.setItem(LS,JSON.stringify(Store.players))}catch(e){}}
 try{const j=JSON.parse(localStorage.getItem(LS)||"{}");if(j&&typeof j==="object")Object.keys(j).forEach(id=>Store.players[id]=normPlayer(j[id]));lastMe=localStorage.getItem(LS+"-me")}catch(e){}
 if(lastMe&&Store.players[lastMe])ME=lastMe;
@@ -1349,7 +1349,7 @@ function renderRanking(){
   el.innerHTML=ids.map((id,k)=>{const p=Store.players[id];
     const rows=Object.keys(GAMES).map(g=>{const s=p.games[g]||{};return `<span>${GAMES[g]}</span><span>${s.pts||0}</span><span>${s.best||0}</span><span>${g==="sopa"?p.sopaLevel:((p.levels||{})[g]||1)}</span>`}).join("");
     return `<div class="pcard"><div class="top"><b>${k===0&&p.total>0?"👑 ":""}${esc(p.name)}</b><span class="tot">${p.total} pts</span></div>
-      <div class="ren" id="ren-${id}"><button class="linkbtn" type="button" data-ren="${id}">✏️ Cambiar nombre</button></div>
+      <div class="ren" id="ren-${id}">${(p.renames||0)>=MAX_RENAMES?`<span class="note" style="text-align:left">🔒 Nombre definitivo: ya se ha cambiado ${MAX_RENAMES} veces.</span>`:`<button class="linkbtn" type="button" data-ren="${id}">✏️ Cambiar nombre (${MAX_RENAMES-(p.renames||0)===1?"te queda 1 cambio":`te quedan ${MAX_RENAMES-(p.renames||0)} cambios`})</button>`}<button class="linkbtn" type="button" data-del="${id}" style="color:var(--bad)">🗑️ Borrar jugador</button></div>
       <div class="gtable"><span class="h">Juego</span><span class="h">Puntos</span><span class="h">Récord</span><span class="h">Nivel</span>${rows}</div>
       <p class="note" style="text-align:left">Puzles terminados: ${p.puzzles.length} de ${PUZ.length}</p>
       ${p.medals.length?`<div class="chips">${p.medals.map(m=>`<span>🏅 ${esc(m)}</span>`).join("")}</div>`:`<p class="note" style="text-align:left">Aún sin medallas. ¡A jugar!</p>`}</div>`}).join("");
@@ -1357,17 +1357,29 @@ function renderRanking(){
 $("go-ranking").onclick=()=>{show("ranking");renderRanking();try{if(window.Cloud&&Cloud.renderWorld)Cloud.renderWorld()}catch(e){}SFX.sparkle();say("¡Estos son los puntos y las medallas de cada jugador!")};
 $("b-ranking").onclick=toMenu;
 /* rename a player (saved on this device and online if the player has a code) */
-$("rankList").addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-ren]");if(b)renameUI(b.dataset.ren)});
-function renameUI(id){const p=Store.players[id],box=$("ren-"+id);if(!p||!box)return;
-  box.innerHTML=`<label class="note" for="renIn" style="text-align:left">Nuevo nombre (máximo 16 letras)</label><div class="nrow"><input id="renIn" maxlength="16" autocomplete="off"><button class="btn" id="renOk" type="button">Guardar</button></div><button class="linkbtn" id="renNo" type="button">Cancelar</button><p class="note" id="renMsg" role="status" style="text-align:left;color:var(--spot)"></p>`;
+$("rankList").addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-ren]");if(b)renameUI(b.dataset.ren);const d=e.target.closest&&e.target.closest("[data-del]");if(d)deleteUI(d.dataset.del)});
+/* delete a player from this device (and from the world ranking if it has a code) */
+function deleteUI(id){const p=Store.players[id],box=$("ren-"+id);if(!p||!box)return;
+  box.innerHTML=`<p class="note" style="text-align:left;color:var(--bad)"><b>¿Seguro que quieres borrar a ${esc(p.name)}?</b> Se borrarán sus puntos, niveles y medallas${p.code?", y también su código y su puesto en la clasificación mundial":""}. No se puede deshacer.</p><div class="row" style="justify-content:flex-start"><button class="btn" id="delOk" type="button" style="background:var(--bad)">Sí, borrar</button><button class="btn ghost" id="delNo" type="button">Cancelar</button></div><p class="note" id="delMsg" role="status" style="text-align:left;color:var(--spot)"></p>`;
+  $("delNo").onclick=()=>renderRanking();
+  $("delOk").onclick=async()=>{$("delOk").disabled=true;
+    if(p.code&&window.Cloud&&Cloud.remove){try{await Cloud.remove(p.code)}catch(e){$("delMsg").textContent="No se ha podido borrar online. Revisa la conexión e inténtalo otra vez.";$("delOk").disabled=false;return}}
+    const name=p.name;delete Store.players[id];
+    if(Store.db){try{await Store.db.doc("players/"+id).delete()}catch(e){}}
+    if(ME===id){ME=null;try{localStorage.removeItem(LS+"-me")}catch(e){}}
+    lsSave();renderMe();renderRanking();SFX.bad();say(`Se ha borrado a <strong>${esc(name)}</strong>.`)}}
+const MAX_RENAMES=2;
+function renameUI(id){const p=Store.players[id],box=$("ren-"+id);if(!p||!box)return;if((p.renames||0)>=MAX_RENAMES){renderRanking();return}
+  const left=MAX_RENAMES-(p.renames||0);
+  box.innerHTML=`<label class="note" for="renIn" style="text-align:left">Nuevo nombre (máximo 16 letras). Ojo: ${left===1?"es tu último cambio; después el nombre se queda fijo.":"solo puedes cambiarlo "+MAX_RENAMES+" veces en total."}</label><div class="nrow"><input id="renIn" maxlength="16" autocomplete="off"><button class="btn" id="renOk" type="button">Guardar</button></div><button class="linkbtn" id="renNo" type="button">Cancelar</button><p class="note" id="renMsg" role="status" style="text-align:left;color:var(--spot)"></p>`;
   const inp=$("renIn");inp.value=p.name;inp.focus();try{inp.select()}catch(e){}
   const ok=()=>{const n=inp.value.trim().slice(0,16);
     if(!n){$("renMsg").textContent="Escribe un nombre.";return}
     if(n===p.name){renderRanking();return}
     if(Object.keys(Store.players).some(k=>k!==id&&Store.players[k].name.toLowerCase()===n.toLowerCase())){$("renMsg").textContent="Ya hay otro jugador con ese nombre en este dispositivo.";return}
-    p.name=n;p.updated=Date.now();savePlayer(id);SFX.ok();renderMe();renderRanking();
+    p.name=n;p.renames=(p.renames||0)+1;p.updated=Date.now();savePlayer(id);SFX.ok();renderMe();renderRanking();
     try{if(window.Cloud&&Cloud.renderWorld)Cloud.renderWorld()}catch(e){}
-    say(`¡Listo! Ahora el jugador se llama <strong>${esc(n)}</strong>.${p.code?" También se ha cambiado en la clasificación mundial.":""}`)};
+    const rest=MAX_RENAMES-p.renames;say(`¡Listo! Ahora el jugador se llama <strong>${esc(n)}</strong>.${p.code?" También se ha cambiado en la clasificación mundial.":""} ${rest>0?"Te queda 1 cambio más.":"Ya no se puede cambiar más."}`)};
   $("renOk").onclick=ok;inp.addEventListener("keydown",e=>{if(e.key==="Enter")ok()});$("renNo").onclick=()=>renderRanking()}
 renderMe();
 

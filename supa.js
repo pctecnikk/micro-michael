@@ -35,7 +35,8 @@
     }, 800);
   }
 
-  window.Cloud = { owns: id => !!(Store.players[id] && Store.players[id].code), save, renderWorld: () => { loadTop(); renderWorld(); } };
+  window.Cloud = { owns: id => !!(Store.players[id] && Store.players[id].code), save, renderWorld: () => { loadTop(); renderWorld(); },
+    remove: code => rpc("mm_delete", { p_code: code }).then(r => { loadTop(); return r; }) };
 
   function setMsg(t, speak) { msg = t; renderBox(); if (speak) say(esc(t)); }
 
@@ -97,6 +98,7 @@
       if (!r) { setMsg("No existe ningún jugador con ese código. Revisa que esté bien escrito."); busy = false; return; }
       const player = normPlayer(Object.assign({}, r.data || {}, { name: r.name || (r.data && r.data.name) || "Jugador" }));
       player.code = code;
+      if (typeof r.renames === "number") player.renames = Math.max(player.renames || 0, r.renames);
       let id = Object.keys(Store.players).find(k => Store.players[k].code === code);
       if (!id) {
         id = slug(player.name); if (id.startsWith("g-")) id = "j-" + id;

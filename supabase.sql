@@ -22,6 +22,9 @@ create table if not exists public.mm_players (
   updated_at  timestamptz not null default now()
 );
 
+-- Veces que el jugador se ha cambiado el nombre (máximo 2).
+alter table public.mm_players add column if not exists renames integer not null default 0;
+
 -- Seguridad: la tabla queda cerrada. Sin políticas, nadie la lee ni escribe
 -- desde fuera; solo las funciones de este archivo pueden usarla.
 alter table public.mm_players enable row level security;
@@ -70,24 +73,35 @@ end
 $$;
 
 -- Guarda el progreso del jugador que tenga ese código.
+-- El nombre solo se puede cambiar 2 veces; después se queda el último.
 create or replace function public.mm_save(p_code text, p_name text, p_total integer, p_medals integer, p_data jsonb)
 returns boolean
 language plpgsql
 security definer
 set search_path = public, extensions
 as $$
+declare
+  v_old text;
+  v_ren integer;
+  v_new text;
+  v_change boolean;
 begin
   if p_data is null or jsonb_typeof(p_data) <> 'object' or pg_column_size(p_data) > 100000 then
     raise exception 'Datos no válidos';
   end if;
+  select name, renames into v_old, v_ren from public.mm_players where code_hash = public.mm_hash(p_code);
+  if not found then return false; end if;
+  v_new := left(coalesce(nullif(trim(p_name), ''), v_old), 16);
+  v_change := v_new <> v_old and v_ren < 2;
   update public.mm_players
-     set name       = left(coalesce(nullif(trim(p_name), ''), name), 16),
+     set name       = case when v_change then v_new else v_old end,
+         renames    = renames + case when v_change then 1 else 0 end,
          total      = greatest(0, least(coalesce(p_total, 0), 10000000)),
          medals     = greatest(0, least(coalesce(p_medals, 0), 1000)),
          data       = p_data,
          updated_at = now()
    where code_hash = public.mm_hash(p_code);
-  return found;
+  return true;
 end
 $$;
 
@@ -99,9 +113,22 @@ stable
 security definer
 set search_path = public, extensions
 as $$
-  select json_build_object('name', name, 'data', data)
+  select json_build_object('name', name, 'renames', renames, 'data', data)
     from public.mm_players
    where code_hash = public.mm_hash(p_code)
+$$;
+
+-- Borra para siempre al jugador que tenga ese código.
+create or replace function public.mm_delete(p_code text)
+returns boolean
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+begin
+  delete from public.mm_players where code_hash = public.mm_hash(p_code);
+  return found;
+end
 $$;
 
 -- Clasificación mundial: solo apodo, puntos y medallas.
@@ -123,7 +150,9 @@ revoke all on function public.mm_create(text) from public;
 revoke all on function public.mm_save(text, text, integer, integer, jsonb) from public;
 revoke all on function public.mm_load(text) from public;
 revoke all on function public.mm_top(integer) from public;
+revoke all on function public.mm_delete(text) from public;
 grant execute on function public.mm_create(text) to anon, authenticated;
 grant execute on function public.mm_save(text, text, integer, integer, jsonb) to anon, authenticated;
 grant execute on function public.mm_load(text) to anon, authenticated;
 grant execute on function public.mm_top(integer) to anon, authenticated;
+grant execute on function public.mm_delete(text) to anon, authenticated;
