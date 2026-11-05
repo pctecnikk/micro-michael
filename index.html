@@ -31,6 +31,9 @@ body{background:var(--stage);color:var(--ink);font-family:var(--body);font-size:
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   background-image:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(245,211,107,.24),transparent 70%),linear-gradient(180deg,rgba(150,80,255,.18),transparent 420px);background-repeat:no-repeat}
 .wrap{max-width:560px;margin:0 auto;padding-block:20px 40px;display:flex;flex-direction:column;gap:18px}
+.home{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;padding:7px 14px;min-height:40px;box-sizing:border-box;border-radius:999px;border:1.5px solid var(--line);background:var(--stage-2);color:var(--ink);font:800 15px/1 var(--body);text-decoration:none;transition:border-color .15s,color .15s,transform .1s;-webkit-tap-highlight-color:transparent}
+.home:hover,.home:focus-visible{border-color:var(--spot);color:var(--spot)}
+.home:active{transform:scale(.96)}
 header{text-align:center;display:flex;flex-direction:column;gap:6px}
 .verpill{align-self:center;justify-self:center;width:auto;max-width:100%;display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);font:700 13px/1.2 var(--body);cursor:default}
 .verpill:empty{display:none}
@@ -323,6 +326,7 @@ body.fixbubble .bubble{height:7.4em;overflow-y:auto}
 
 <div class="wrap">
   <header>
+    <a class="home" href="https://ai-online-games.com/" aria-label="Ir a la pantalla principal de IA Online Games"><span aria-hidden="true">🏠</span> Inicio</a>
     <span class="eyebrow">Juegos para fans</span>
     <h1>Micro Michael y el Rey del Pop</h1>
   </header>
@@ -1452,7 +1456,7 @@ $("wAgain").onclick=()=>{SFX.intro();startWheel()};
 window.addEventListener("resize",()=>{if(!$("v-wheel").hidden)wDrawWheel()});
 
 /* ================= NEW VERSION NOTICE (website only) ================= */
-const APP_VERSION="20261105-020923",APP_RELEASE="1.2.0",APP_DATE="5 de noviembre de 2026 a las 02:09";
+const APP_VERSION="20261105-022939",APP_RELEASE="1.2.1",APP_DATE="5 de noviembre de 2026 a las 02:29";
 /* show the version that is running now, and whether it is the latest one */
 const live=!APP_RELEASE.startsWith("__")&&/^https?:$/.test(location.protocol);
 function verPill(state,rel){const b=$("verPill");b.className="verpill"+(state?" "+state:"");b.disabled=state!=="new";
