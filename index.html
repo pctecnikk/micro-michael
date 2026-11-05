@@ -465,6 +465,8 @@ body.fixbubble .bubble{height:7.4em;overflow-y:auto}
       <label for="lName" id="lOr">Escribe tu nombre</label>
       <div class="nrow"><input id="lName" maxlength="16" placeholder="Tu nombre" autocomplete="off" enterkeyhint="go"><button class="btn" id="lGo" type="submit">¡A jugar!</button></div>
     </form>
+    <button class="linkbtn" id="bkLoadL" type="button">📂 Cargar una copia de seguridad</button>
+    <div id="bk-login" role="status"></div>
   </section>
 
   <!-- RANKING -->
@@ -474,10 +476,10 @@ body.fixbubble .bubble{height:7.4em;overflow-y:auto}
     <div class="rank" id="rankList"></div>
     <div class="pcard" id="backup">
       <h2>Copia de seguridad</h2>
-      <p class="note" style="text-align:left">Guarda un archivo con los puntos, niveles y medallas de todos los jugadores. Después puedes cargarlo en otro móvil, o en este mismo si se borran los datos del navegador.</p>
-      <div class="row" style="justify-content:flex-start"><button class="btn" id="bkSave">💾 Guardar copia de mi progreso</button><button class="btn ghost" id="bkLoad">📂 Cargar progreso</button></div>
+      <p class="note" style="text-align:left">Cada jugador tiene arriba su botón «💾 Guardar copia de seguridad», que descarga un archivo con sus puntos, niveles y medallas. Después puedes cargarlo en otro móvil, o en este mismo si se borran los datos del navegador.</p>
+      <div class="row" style="justify-content:flex-start"><button class="btn ghost" id="bkLoad" type="button">📂 Cargar una copia de seguridad</button></div>
       <input type="file" id="bkFile" accept=".json,application/json" hidden>
-      <p class="note" id="bkMsg" role="status" style="text-align:left;color:var(--spot)"></p>
+      <div id="bk-ranking" role="status"></div>
     </div>
   </section>
 
@@ -1444,7 +1446,7 @@ $("wAgain").onclick=()=>{SFX.intro();startWheel()};
 window.addEventListener("resize",()=>{if(!$("v-wheel").hidden)wDrawWheel()});
 
 /* ================= NEW VERSION NOTICE (website only) ================= */
-const APP_VERSION="20261103-222722",APP_RELEASE="1.0.0",APP_DATE="3 de noviembre de 2026 a las 22:27";
+const APP_VERSION="20261105-015418",APP_RELEASE="1.1.0",APP_DATE="5 de noviembre de 2026 a las 01:54";
 /* show the version that is running now */
 (function(){const live=!APP_RELEASE.startsWith("__");
   $("verTag").textContent=live?" · v"+APP_RELEASE:"";
@@ -1511,7 +1513,7 @@ function renderLogin(){
     b.querySelector("b").textContent="🎤 "+p.name;b.querySelector("span").textContent=`${p.total} puntos · ${p.medals.length} ${p.medals.length===1?"medalla":"medallas"}`;b.onclick=()=>choosePlayer(id);L.appendChild(b)});
   $("lOr").textContent=ids.length?"¿Eres alguien nuevo? Escribe tu nombre":"Escribe tu nombre";
 }
-function askPlayer(g){pendingGame=g;show("login");renderLogin();$("lTitle").textContent=g?`¿Quién va a jugar a ${GAMES[g]}?`:"¿Quién va a jugar?";
+function askPlayer(g){pendingGame=g;$("bk-login").innerHTML="";show("login");renderLogin();$("lTitle").textContent=g?`¿Quién va a jugar a ${GAMES[g]}?`:"¿Quién va a jugar?";
   say(Object.keys(Store.players).length?"¿Quién va a jugar? Toca tu nombre, o escribe uno nuevo.":"¡Hola! Antes de empezar, escribe tu nombre para que guarde tus puntos.")}
 function launch(g){SFX.intro();show(g);START[g]()}
 function choosePlayer(id){ME=id;try{localStorage.setItem(LS+"-me",id)}catch(e){}renderMe();SFX.sparkle();
@@ -1529,7 +1531,7 @@ function renderRanking(){
   el.innerHTML=ids.map((id,k)=>{const p=Store.players[id];
     const rows=Object.keys(GAMES).map(g=>{const s=p.games[g]||{};return `<span>${GAMES[g]}</span><span>${s.pts||0}</span><span>${s.best||0}</span><span>${g==="sopa"?p.sopaLevel:((p.levels||{})[g]||1)}</span>`}).join("");
     return `<div class="pcard"><div class="top"><b>${k===0&&p.total>0?"👑 ":""}${esc(p.name)}</b><span class="tot">${p.total} pts</span></div>
-      <div class="ren" id="ren-${id}">${(p.renames||0)>=MAX_RENAMES?`<span class="note" style="text-align:left">🔒 Nombre definitivo: ya se ha cambiado ${MAX_RENAMES} veces.</span>`:`<button class="linkbtn" type="button" data-ren="${id}">✏️ Cambiar nombre (${MAX_RENAMES-(p.renames||0)===1?"te queda 1 cambio":`te quedan ${MAX_RENAMES-(p.renames||0)} cambios`})</button>`}<button class="linkbtn" type="button" data-del="${id}" style="color:var(--bad)">🗑️ Borrar jugador</button></div>
+      <div class="ren" id="ren-${id}">${(p.renames||0)>=MAX_RENAMES?`<span class="note" style="text-align:left">🔒 Nombre definitivo: ya se ha cambiado ${MAX_RENAMES} veces.</span>`:`<button class="linkbtn" type="button" data-ren="${id}">✏️ Cambiar nombre (${MAX_RENAMES-(p.renames||0)===1?"te queda 1 cambio":`te quedan ${MAX_RENAMES-(p.renames||0)} cambios`})</button>`}<button class="linkbtn" type="button" data-bk="${id}">💾 Guardar copia de seguridad</button><button class="linkbtn" type="button" data-del="${id}" style="color:var(--bad)">🗑️ Borrar jugador</button></div>
       <div class="gtable"><span class="h">Juego</span><span class="h">Puntos</span><span class="h">Récord</span><span class="h">Nivel</span>${rows}</div>
       <p class="note" style="text-align:left">Puzles terminados: ${p.puzzles.length} de ${PUZ.length}</p>
       ${p.medals.length?`<div class="chips">${p.medals.map(m=>`<span>🏅 ${esc(m)}</span>`).join("")}</div>`:`<p class="note" style="text-align:left">Aún sin medallas. ¡A jugar!</p>`}</div>`}).join("");
@@ -1537,7 +1539,7 @@ function renderRanking(){
 $("go-ranking").onclick=()=>{show("ranking");renderRanking();try{if(window.Cloud&&Cloud.renderWorld)Cloud.renderWorld()}catch(e){}SFX.sparkle();say("¡Estos son los puntos y las medallas de cada jugador!")};
 $("b-ranking").onclick=toMenu;
 /* rename a player (saved on this device and online if the player has a code) */
-$("rankList").addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-ren]");if(b)renameUI(b.dataset.ren);const d=e.target.closest&&e.target.closest("[data-del]");if(d)deleteUI(d.dataset.del)});
+$("rankList").addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-ren]");if(b)renameUI(b.dataset.ren);const k=e.target.closest&&e.target.closest("[data-bk]");if(k)backupSave(k.dataset.bk);const d=e.target.closest&&e.target.closest("[data-del]");if(d)deleteUI(d.dataset.del)});
 /* delete a player from this device (and from the world ranking if it has a code) */
 function deleteUI(id){const p=Store.players[id],box=$("ren-"+id);if(!p||!box)return;
   box.innerHTML=`<p class="note" style="text-align:left;color:var(--bad)"><b>¿Seguro que quieres borrar a ${esc(p.name)}?</b> Se borrarán sus puntos, niveles y medallas${p.code?", y también su código y su puesto en la clasificación mundial":""}. No se puede deshacer.</p><div class="row" style="justify-content:flex-start"><button class="btn" id="delOk" type="button" style="background:var(--bad)">Sí, borrar</button><button class="btn ghost" id="delNo" type="button">Cancelar</button></div><p class="note" id="delMsg" role="status" style="text-align:left;color:var(--spot)"></p>`;
@@ -1563,32 +1565,48 @@ function renameUI(id){const p=Store.players[id],box=$("ren-"+id);if(!p||!box)ret
   $("renOk").onclick=ok;inp.addEventListener("keydown",e=>{if(e.key==="Enter")ok()});$("renNo").onclick=()=>renderRanking()}
 renderMe();
 
-/* ================= BACKUP: save / load progress file ================= */
-function bkMsg(t){$("bkMsg").textContent=t}
+/* ================= BACKUP: save / load progress file (one player per file, like the other games) ================= */
+const BK_APP="destello-rey-del-pop";let bkWhere="ranking";
+function bkBox(){return $("bk-"+bkWhere)||$("bk-ranking")}
+function bkMsg(t){const b=bkBox();b.innerHTML='<p class="note" style="text-align:left;color:var(--spot)"></p>';b.firstChild.textContent=t}
 function anchorDownload(fname,json){const blob=new Blob([json],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=fname;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000)}
-$("bkSave").onclick=async()=>{
-  if(!Object.keys(Store.players).length){bkMsg("Todavía no hay jugadores que guardar. Juega primero con tu nombre.");return}
-  const d=new Date(),fname=`michael-progreso-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}.json`;
-  const json=JSON.stringify({app:"destello-rey-del-pop",version:1,saved:d.toISOString(),players:Store.players},null,2);
+async function backupSave(id){const p=Store.players[id];if(!p)return;bkWhere="ranking";
+  const d=new Date(),z=n=>String(n).padStart(2,"0"),fname=`michael-progreso-${slug(p.name)}-${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}.json`;
+  const json=JSON.stringify({app:BK_APP,version:APP_RELEASE,saved:d.toISOString(),player:p},null,2);
+  const done=()=>{bkMsg(`Copia de ${p.name} guardada en Descargas: ${fname}. Guárdala bien${p.code?": incluye su código de jugador":""}.`);SFX.sparkle();say(`¡Copia de <strong>${esc(p.name)}</strong> guardada!`)};
   if(window.claude&&window.claude.use){
-    try{const dl=await window.claude.use("downloads");if(dl){await dl.save({filename:fname,data:json});bkMsg("Copia guardada: "+fname);SFX.sparkle();return}}
+    try{const dl=await window.claude.use("downloads");if(dl){await dl.save({filename:fname,data:json});done();return}}
     catch(e){if(e&&e.code==="declined"){bkMsg("No se ha guardado la copia.");return}bkMsg("No se ha podido guardar la copia aquí.");return}
   }
-  try{anchorDownload(fname,json);bkMsg(`Copia guardada en Descargas: ${fname}`);SFX.sparkle()}catch(e){bkMsg("No se ha podido descargar la copia en este dispositivo.")}
-};
-$("bkLoad").onclick=()=>$("bkFile").click();
+  try{anchorDownload(fname,json);done()}catch(e){bkMsg("No se ha podido descargar la copia en este dispositivo.")}};
+function bkId(inc){if(inc.code){const k=Object.keys(Store.players).find(k=>Store.players[k].code===inc.code);if(k)return k}let id=slug(inc.name);if(id.startsWith("g-"))id="j-"+id;return id}
+function backupApply(id,inc){
+  Store.players[id]=inc;savePlayer(id);lsSave();refreshPlayerUI();if(!$("v-ranking").hidden)renderRanking();SFX.ok();
+  bkMsg(`¡Progreso recuperado! ${inc.name} tiene ${inc.total} puntos y ${inc.medals.length} ${inc.medals.length===1?"medalla":"medallas"}.`);
+  const where=bkWhere;if(where==="login")choosePlayer(id);else{ME=id;try{localStorage.setItem(LS+"-me",id)}catch(e){}renderMe();say("¡Progreso recuperado! Ya están aquí los puntos y las medallas.")}
+  if(inc.code&&window.Cloud&&Cloud.load)Cloud.load(inc.code).then(r=>{if(Store.players[id]!==inc)return;
+    if(!r){delete inc.code;lsSave();refreshPlayerUI();bkWhere=where;bkMsg(`Progreso recuperado, pero el código de la copia ya no existe online. Crea uno nuevo al elegir jugador.`);return}
+    if((+r.total||0)>inc.total){const o=normPlayer(Object.assign({},r.data||{},{name:r.name||inc.name}));o.code=inc.code;o.renames=Math.max(o.renames||0,+r.renames||0);o.updated=Date.now();Store.players[id]=o;lsSave();refreshPlayerUI();bkWhere=where;bkMsg(`¡Progreso recuperado! Online tenía más puntos, así que se han usado esos: ${o.total}.`)}
+    else savePlayer(id)}).catch(()=>{})}
+function backupAsk(id,inc){const b=bkBox(),loc=Store.players[id];
+  b.innerHTML=`<p class="note" style="text-align:left;color:var(--ink)">Ya hay un jugador <b>${esc(loc.name)}</b> en este dispositivo (${loc.total} puntos). Se cambiará por lo que hay en la copia: <b>${esc(inc.name)}</b> con ${inc.total} puntos.</p><div class="row" style="justify-content:flex-start"><button class="btn" id="bkOk" type="button">Sí, cargar la copia</button><button class="btn ghost" id="bkNo" type="button">Cancelar</button></div>`;
+  $("bkNo").onclick=()=>{b.innerHTML=""};$("bkOk").onclick=()=>backupApply(id,inc)}
+$("bkLoad").onclick=()=>{bkWhere="ranking";$("bkFile").click()};
+$("bkLoadL").onclick=()=>{bkWhere="login";$("bkFile").click()};
 $("bkFile").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];e.target.value="";if(!f)return;
   const r=new FileReader();
-  r.onload=()=>{try{
-    const j=JSON.parse(r.result),ps=j&&j.players;if(!ps||typeof ps!=="object"||j.app!=="destello-rey-del-pop")throw 0;
-    let added=0,upd=0;
+  r.onload=()=>{let j;try{j=JSON.parse(r.result);if(!j||j.app!==BK_APP||!(j.player||j.players))throw 0}
+    catch(err){SFX.bad();bkMsg("Ese archivo no es una copia de este juego. Elige el archivo que empieza por michael-progreso.");return}
+    if(j.player){const inc=normPlayer(j.player);inc.updated=Date.now();const id=bkId(inc),loc=Store.players[id];
+      if(loc&&(loc.code!==inc.code||loc.total!==inc.total||loc.name!==inc.name))backupAsk(id,inc);else backupApply(id,inc);return}
+    /* older copies saved every player on the device in one file */
+    let added=0,upd=0;const ps=j.players;
     Object.keys(ps).filter(raw=>!raw.startsWith("g-")).forEach(raw=>{const id=slug(raw),inc=normPlayer(ps[raw]),loc=Store.players[id];
       if(!loc){Store.players[id]=inc;added++;savePlayer(id)}
       else if((inc.updated||0)>(loc.updated||0)||inc.total>loc.total){Store.players[id]=inc;upd++;savePlayer(id)}});
-    lsSave();refreshPlayerUI();renderRanking();SFX.ok();
+    lsSave();refreshPlayerUI();if(!$("v-ranking").hidden)renderRanking();SFX.ok();
     bkMsg(`Progreso cargado: ${added} ${added===1?"jugador nuevo":"jugadores nuevos"} y ${upd} ${upd===1?"actualizado":"actualizados"}.`);
-    say("¡Progreso recuperado! Ya están aquí los puntos y las medallas.");
-  }catch(err){SFX.bad();bkMsg("Ese archivo no es una copia de este juego. Elige el archivo que empieza por michael-progreso.")}};
+    say("¡Progreso recuperado! Ya están aquí los puntos y las medallas.")};
   r.onerror=()=>bkMsg("No se ha podido leer el archivo.");r.readAsText(f);
 });
 

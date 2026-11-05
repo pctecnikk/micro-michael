@@ -42,7 +42,8 @@
   }
 
   window.Cloud = { owns: id => !!(Store.players[id] && Store.players[id].code), save, renderWorld: () => { loadTop(); renderWorld(); },
-    remove: code => rpc("mm_delete", { p_code: code }).then(r => { loadTop(); return r; }) };
+    remove: code => rpc("mm_delete", { p_code: code }).then(r => { loadTop(); return r; }),
+    load: code => rpc("mm_load", { p_code: code }) };
 
   function setMsg(t, speak) { msg = t; renderBox(); if (speak) say(esc(t)); }
 

@@ -72,7 +72,7 @@ La web consulta `version.json` cada minuto. Cuando ese número cambia, a quien e
 |---|---|
 | Jugador sin código | En el navegador de ese dispositivo |
 | Jugador con código | En Supabase. Se recupera en cualquier dispositivo con **¿Ya tienes un código?** |
-| Copia de seguridad | Un archivo `.json` que se descarga desde **Puntos y medallas** |
+| Copia de seguridad | Un archivo `.json` por jugador (`michael-progreso-NOMBRE-AAAA-MM-DD.json`), con el botón **💾 Guardar copia de seguridad** de cada jugador en **Puntos y medallas**. Se recupera con **📂 Cargar una copia de seguridad**, en esa misma pantalla o en «¿Quién va a jugar?». También se pueden cargar las copias antiguas con todos los jugadores |
 
 En la clasificación mundial solo se ven el nombre de jugador y los puntos. Si juegan niños, mejor que usen un apodo y no su nombre real.
 
