@@ -34,6 +34,7 @@ body{background:var(--stage);color:var(--ink);font-family:var(--body);font-size:
 header{text-align:center;display:flex;flex-direction:column;gap:6px}
 .verpill{align-self:center;justify-self:center;width:auto;max-width:100%;display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);font:700 13px/1.2 var(--body);cursor:default}
 .verpill:empty{display:none}
+.verfoot{display:flex;justify-content:center}
 .verpill.ok{color:var(--good);border-color:color-mix(in srgb,var(--good) 45%,transparent)}
 .verpill.new{background:var(--spot);border-color:var(--spot);color:#1a1405;cursor:pointer}
 .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:700}
@@ -322,9 +323,8 @@ body.fixbubble .bubble{height:7.4em;overflow-y:auto}
 
 <div class="wrap">
   <header>
-    <span class="eyebrow">Juegos para fans<span id="verTag"></span></span>
+    <span class="eyebrow">Juegos para fans</span>
     <h1>Micro Michael y el Rey del Pop</h1>
-    <button class="verpill" id="verPill" type="button" disabled></button>
   </header>
   <div class="who" id="who" hidden>Juega <b id="whoName"></b> · <span><b id="whoPts">0</b> puntos</span><button class="linkbtn" id="whoChange">Cambiar</button></div>
 
@@ -493,6 +493,7 @@ body.fixbubble .bubble{height:7.4em;overflow-y:auto}
     <button class="btn ghost" id="sound" aria-pressed="true">🎵 Sonidos: sí</button>
   </div>
   <p class="note">Juego de fans no oficial. No está afiliado a Michael Jackson, a sus herederos ni a sus discográficas.</p>
+  <div class="verfoot"><button class="verpill" id="verPill" type="button" disabled></button></div>
   <p class="note" id="appVer"></p>
   <p class="note" id="voicehint" hidden style="color:var(--spot)">Este dispositivo no ha reproducido la voz de Michael, el micrófono. Prueba a quitar el modo silencio, subir el volumen o abrir este enlace en Safari o Chrome. Mientras tanto, puedes jugar leyendo.</p>
 </div>
@@ -1451,14 +1452,13 @@ $("wAgain").onclick=()=>{SFX.intro();startWheel()};
 window.addEventListener("resize",()=>{if(!$("v-wheel").hidden)wDrawWheel()});
 
 /* ================= NEW VERSION NOTICE (website only) ================= */
-const APP_VERSION="20261105-015808",APP_RELEASE="1.1.1",APP_DATE="5 de noviembre de 2026 a las 01:58";
+const APP_VERSION="20261105-020325",APP_RELEASE="1.1.2",APP_DATE="5 de noviembre de 2026 a las 02:03";
 /* show the version that is running now, and whether it is the latest one */
 const live=!APP_RELEASE.startsWith("__")&&/^https?:$/.test(location.protocol);
 function verPill(state,rel){const b=$("verPill");b.className="verpill"+(state?" "+state:"");b.disabled=state!=="new";
   b.textContent=state==="ok"?`✅ Versión ${APP_RELEASE} · actualizada`:state==="new"?`✨ Hay una versión nueva${rel?" ("+rel+")":""} · Actualizar`:`Versión ${APP_RELEASE}`}
 (function(){
-  $("verTag").textContent=APP_RELEASE.startsWith("__")?"":" · v"+APP_RELEASE;
-  $("appVer").textContent=live?`Versión ${APP_RELEASE} · publicada el ${APP_DATE}`:"Versión de prueba";
+  $("appVer").textContent=live?`Publicada el ${APP_DATE}`:"Versión de prueba";
   if(!live){verPill("",null);if(APP_RELEASE.startsWith("__"))$("verPill").textContent="";return}
   verPill("",null);
   let latest=null,snoozeUntil=0;
