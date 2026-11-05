@@ -34,6 +34,27 @@ body{background:var(--stage);color:var(--ink);font-family:var(--body);font-size:
 .home{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;padding:7px 14px;min-height:40px;box-sizing:border-box;border-radius:999px;border:1.5px solid var(--line);background:var(--stage-2);color:var(--ink);font:800 15px/1 var(--body);text-decoration:none;transition:border-color .15s,color .15s,transform .1s;-webkit-tap-highlight-color:transparent}
 .home:hover,.home:focus-visible{border-color:var(--spot);color:var(--spot)}
 .home:active{transform:scale(.96)}
+/* fun intro card (same spirit as the word search one) */
+.fun{position:relative;align-self:center;width:100%;max-width:620px;box-sizing:border-box;margin:4px 0 6px;padding:14px 16px 13px;border:2px dashed var(--spot);border-radius:18px;transform:rotate(1.2deg);
+  background:radial-gradient(120% 140% at 100% 0%,rgba(255,94,200,.22),transparent 60%),radial-gradient(90% 120% at 0% 100%,rgba(150,80,255,.25),transparent 60%),var(--stage-2);box-shadow:0 12px 26px -16px #ff5ec8;text-align:center}
+.fun::after{content:"♪ en directo";position:absolute;top:-12px;left:14px;transform:rotate(-7deg);background:#ff5ec8;color:#2a0626;font:900 12px/1 var(--body);padding:5px 10px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase}
+.fun-t{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(16px,4.6vw,23px);line-height:1.25;display:flex;gap:8px;justify-content:center;align-items:flex-start;text-wrap:balance;color:var(--ink)}
+.fun-s{margin:8px 0 0;color:var(--muted);font-size:15px;line-height:1.45;text-wrap:balance}
+.fun-s em{font-style:italic}
+.nowrap{white-space:nowrap}
+.mic{display:inline-block;flex:none;transform-origin:50% 90%;animation:mic 1.6s ease-in-out infinite}
+@keyframes mic{0%,100%{transform:rotate(-10deg) translateY(0)}25%{transform:rotate(8deg) translateY(-3px)}50%{transform:rotate(-6deg) translateY(0)}75%{transform:rotate(12deg) translateY(-4px) scale(1.08)}}
+.rey{color:var(--spot);display:inline-block}
+.rey span{display:inline-block;animation:baila 2.8s ease-in-out infinite;animation-delay:calc(var(--i) * .08s)}
+@keyframes baila{0%,55%,100%{transform:none}62%{transform:translateY(-7px) rotate(-8deg)}70%{transform:translateY(0) skewX(-12deg)}78%{transform:translateY(-3px) rotate(6deg)}86%{transform:none}}
+.corona{display:inline-block;font-size:.7em;transform:translateY(-.55em) rotate(-14deg);margin-right:-.15em}
+.dodepecho{color:var(--ink);font-weight:900;font-style:normal;text-decoration:underline wavy #ff5ec8;text-underline-offset:4px}
+.nota{display:inline-block;animation:nota 2.2s ease-in-out infinite}
+@keyframes nota{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-6px) rotate(14deg)}}
+.fun:hover .rey span,.fun:active .rey span{animation-duration:1s}
+body:not(.onmenu) .fun{display:none}
+@media (prefers-reduced-motion:reduce){.mic,.rey span,.nota{animation:none}}
+@media (min-width:1000px){.fun{max-width:760px;padding:18px 22px 16px}.fun-t{font-size:28px}.fun-s{font-size:18px}}
 header{text-align:center;display:flex;flex-direction:column;gap:6px}
 .verpill{align-self:center;justify-self:center;width:auto;max-width:100%;display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);font:700 13px/1.2 var(--body);cursor:default}
 .verpill:empty{display:none}
@@ -327,6 +348,10 @@ body.fixbubble .bubble{height:7.4em;overflow-y:auto}
 <div class="wrap">
   <header>
     <a class="home" href="https://iapps.ai-online-games.com/" aria-label="Ir a la pantalla principal de IA Online Games"><span aria-hidden="true">🏠</span> Inicio</a>
+    <div class="fun" role="note">
+      <p class="fun-t"><span class="mic" aria-hidden="true">🎤</span> <span>Micro Michael: <span class="nowrap"><span class="corona" aria-hidden="true">👑</span><span class="rey" aria-label="El Rey del Pop"><span style="--i:0">E</span><span style="--i:1">l</span> <span style="--i:3">R</span><span style="--i:4">e</span><span style="--i:5">y</span> <span style="--i:7">d</span><span style="--i:8">e</span><span style="--i:9">l</span> <span style="--i:11">P</span><span style="--i:12">o</span><span style="--i:13">p</span></span></span></span></p>
+      <p class="fun-s"><em>Demuestra tus conocimientos musicales, sigue el ritmo y da el <span class="dodepecho">do de pecho</span> con la leyenda de la música.</em> <span class="nota" aria-hidden="true">🎶</span></p>
+    </div>
     <span class="eyebrow">Juegos para fans</span>
     <h1>Micro Michael y el Rey del Pop</h1>
   </header>
@@ -506,6 +531,7 @@ body.fixbubble .bubble{height:7.4em;overflow-y:auto}
 
 <script>
 const $=id=>document.getElementById(id);
+document.body.classList.add("onmenu");
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
 function shuffle(a){a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]]}return a}
 
@@ -566,7 +592,7 @@ function say(text,then){
 
 /* ================= NAVIGATION ================= */
 const VIEWS=["menu","quiz","rhythm","timeline","memory","puzzle","sopa","tour","wheel","login","ranking"];
-function show(v){syncHash(v);VIEWS.forEach(n=>$("v-"+n).hidden=n!==v);try{gMode()}catch(e){}document.body.classList.toggle("fixbubble",v==="sopa"||v==="puzzle");if(v!=="rhythm")stopRhythm();window.scrollTo({top:0,behavior:"smooth"})}
+function show(v){syncHash(v);document.body.classList.toggle("onmenu",v==="menu");VIEWS.forEach(n=>$("v-"+n).hidden=n!==v);try{gMode()}catch(e){}document.body.classList.toggle("fixbubble",v==="sopa"||v==="puzzle");if(v!=="rhythm")stopRhythm();window.scrollTo({top:0,behavior:"smooth"})}
 function toMenuNow(){sayId++;hush();show("menu");say("¿A qué jugamos ahora? Elige otro juego.")}
 /* Back button + phone/browser back gesture both return to the menu */
 let curView="menu";
@@ -1456,7 +1482,7 @@ $("wAgain").onclick=()=>{SFX.intro();startWheel()};
 window.addEventListener("resize",()=>{if(!$("v-wheel").hidden)wDrawWheel()});
 
 /* ================= NEW VERSION NOTICE (website only) ================= */
-const APP_VERSION="20261105-023137",APP_RELEASE="1.2.2",APP_DATE="5 de noviembre de 2026 a las 02:31";
+const APP_VERSION="20261105-025125",APP_RELEASE="1.2.3",APP_DATE="5 de noviembre de 2026 a las 02:51";
 /* show the version that is running now, and whether it is the latest one */
 const live=!APP_RELEASE.startsWith("__")&&/^https?:$/.test(location.protocol);
 function verPill(state,rel){const b=$("verPill");b.className="verpill"+(state?" "+state:"");b.disabled=state!=="new";
